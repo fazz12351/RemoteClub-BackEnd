@@ -1,26 +1,17 @@
-const express = require("express")
-const app = express()
+const express = require("express");
+const bodyParser = require("body-parser");
+const app = express();
 
+// Middleware to parse JSON and URL-encoded request bodies
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.get("/", async (req, res) => {
-    try {
-        console.log("im being called")
+const loginRouter = require("./routes/login-routes")
 
-    }
-    catch (err) {
-        throw new Error("Error occured")
-    }
+app.use("/login", loginRouter)
 
-})
+const PORT = 3000;
 
-
-app.listen(3000, async () => {
-    try {
-        console.log(`server running on Port 3000`)
-
-    }
-    catch (err) {
-        console.log(err)
-    }
-
-})
+app.listen(PORT, () => {
+    console.log(`Server is running on Port ${PORT}`);
+});
