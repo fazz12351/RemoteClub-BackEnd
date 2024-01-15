@@ -1,0 +1,14 @@
+{
+  "name": "remoteclub",
+  "version": "1.0.0",
+  "description": "Backend For RemoteClub",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Faeem Ahmed",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
