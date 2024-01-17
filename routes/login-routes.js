@@ -63,6 +63,29 @@ app.post("/login_Tradesman", async (req, res) => {
     }
 });
 
+app.post("/Online/:isOnline", async (req, res) => {
+    try {
+        const { email } = req.body;
+        const isOnline = parseInt(req.params.isOnline);
+
+        if (isNaN(isOnline) || (isOnline !== 0 && isOnline !== 1)) {
+            return res.status(400).json({ Error: "Param value should be either 0 or 1" });
+        }
+
+        const filter = { email };
+        const updateOperation = { $set: { available: isOnline === 1 } };
+
+        await EmployeeModel.updateOne(filter, updateOperation);
+
+        const responseMessage = isOnline === 1 ? "User successfully online" : "User successfully offline";
+
+        res.status(200).json({ response: responseMessage });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ Error: "Internal Server Error" });
+    }
+});
+
 
 
 module.exports = app;

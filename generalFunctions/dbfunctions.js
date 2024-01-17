@@ -16,7 +16,8 @@ const EmployeeSchema = new mongoose.Schema({
     firstname: String,
     lastname: String,
     password: String,
-    email: String
+    email: String,
+    available: Boolean
 });
 
 const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
@@ -27,7 +28,8 @@ async function registerEmployee(firstname, lastname, password, email) {
             firstname: firstname,
             lastname: lastname,
             password: password,
-            email: email
+            email: email,
+            available: false
         });
         await newEmployee.save();
         console.log("Saved new employee:", newEmployee);
