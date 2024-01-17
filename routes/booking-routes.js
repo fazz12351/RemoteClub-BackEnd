@@ -44,25 +44,42 @@ app.post("/bookJob/:tradesmanEmail", async (req, res) => {
     }
 });
 
+
 app.post("/bookJob", async (req, res) => {
     try {
         const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
-        const newBooking = await new BookingModel({
-            firstname: firstname,
-            lastname: lastname,
-            telephone: telephone,
-            address: address,
-            jobtitle: jobtitle,
-            jobdescription: jobdescription
-        })
-        await newBooking.save()
-        return res.status(200).json({ responce: `Job has been posted succesfully for a ${jobtitle} service ` })
-    }
-    catch (error) {
+
+        // Create a new booking instance
+        const newBooking = new BookingModel({
+            firstname,
+            lastname,
+            telephone,
+            address,
+            jobtitle,
+            jobdescription,
+        });
+
+        // Save the new booking to the database
+        await newBooking.save();
+
+        // Respond with a success message
+        return res.status(200).json({
+            response: `Job has been posted successfully for a ${jobtitle} service`,
+            bookingInformation: newBooking,
+        });
+    } catch (error) {
         console.error(error);
+        // Handle validation errors
+        if (error.name === "ValidationError") {
+            return res.status(400).json({ response: "Validation Error", errors: error.errors });
+        }
+        // Handle other errors
         res.status(500).json({ response: "Internal Server Error" });
     }
 });
+
+module.exports = app;
+
 
 
 
