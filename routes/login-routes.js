@@ -3,7 +3,7 @@ const app = express();
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
 const registerTradesman = require("../generalFunctions/dbfunctions");
-const { hashPassword, registerEmployee, EmployeeModel } = require("../generalFunctions/dbfunctions");
+const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../generalFunctions/dbfunctions");
 
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
@@ -13,29 +13,56 @@ app.get("/test", async (req, res) => {
     res.send("Test endpoint is working!");
 });
 
-app.post("/registerTradesman", async (req, res) => {
+app.post("/register_Tradesman", async (req, res) => {
     try {
-        let { firstname, lastname, password, email } = req.body; // Use let instead of const for reassignment
+        let { firstname, lastname, password, email } = req.body;
 
         if (firstname && lastname && password && email) {
-            const exists = await EmployeeModel.find({ "email": email })
-            if (exists.length == 0) {
-                const hashedPassword = await hashPassword(password)
-                await registerEmployee(firstname, lastname, hashedPassword, email)
-                return res.status(200).json({ responce: "User succesfully added" })
+            const userExists = await EmployeeModel.exists({ email });
 
-            }
-            else {
-                return res.status(400).json({ responce: "User already exist in the database with that email" })
+            if (!userExists) {
+                const hashedPassword = await hashPassword(password);
+                await registerEmployee(firstname, lastname, hashedPassword, email);
+                return res.status(200).json({ response: "User successfully added" });
+            } else {
+                return res.status(409).json({ response: "User already exists with that email" });
             }
         } else {
-            res.status(400).json({ response: "Not all fields were valid" }); // Change status to 400 for Bad Request
+            return res.status(400).json({ response: "Not all fields were valid" });
         }
     } catch (err) {
-        console.error("Error:", err); // Log the error
-        res.status(500).json({ response: "Internal Server Error" }); // Send a generic error response
+        console.error("Error:", err);
+        return res.status(500).json({ response: "Internal Server Error" });
     }
 });
+
+app.post("/login_Tradesman", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (email && password) {
+            const user = await EmployeeModel.findOne({ email });
+
+            if (user) {
+                const isPasswordValid = await comparePasswords(password, user.password);
+
+                if (isPasswordValid) {
+                    return res.status(200).json({ response: "User successfully logged in" });
+                } else {
+                    return res.status(401).json({ response: "User password is incorrect" });
+                }
+            } else {
+                return res.status(404).json({ response: "Email or password does not exist" });
+            }
+        } else {
+            return res.status(400).json({ response: "Please enter all fields" });
+        }
+    } catch (err) {
+        console.error("Error:", err);
+        return res.status(500).json({ response: "Internal Server Error" });
+    }
+});
+
 
 
 module.exports = app;

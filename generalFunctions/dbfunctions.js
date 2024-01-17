@@ -63,6 +63,7 @@ async function comparePasswords(inputPassword, hashedPassword) {
 
 
 
+
 module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel }
 
 
