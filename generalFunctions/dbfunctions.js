@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 // Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/RemoteClub', { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
@@ -15,19 +15,20 @@ db.once('open', () => {
 const EmployeeSchema = new mongoose.Schema({
     firstname: String,
     lastname: String,
-    password: String
+    password: String,
+    email: String
 });
 
 const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
 
-async function registerEmployee(firstname, lastname, password) {
+async function registerEmployee(firstname, lastname, password, email) {
     try {
         const newEmployee = new EmployeeModel({
             firstname: firstname,
             lastname: lastname,
-            password: password
+            password: password,
+            email: email
         });
-
         await newEmployee.save();
         console.log("Saved new employee:", newEmployee);
     } catch (err) {
@@ -61,4 +62,10 @@ async function comparePasswords(inputPassword, hashedPassword) {
 
 
 
-module.exports = { registerEmployee, hashPassword, comparePasswords }
+
+module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel }
+
+
+
+
+
