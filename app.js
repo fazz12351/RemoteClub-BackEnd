@@ -7,8 +7,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const loginRouter = require("./routes/login-routes")
+const bookingRouter = require("./routes/booking-routes")
 
 app.use("/login", loginRouter)
+app.use("/booking", bookingRouter)
 
 const PORT = 3000;
 

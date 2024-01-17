@@ -11,14 +11,25 @@ db.once('open', () => {
     console.log('Connected to MongoDB');
 });
 
+const BookingSchema = new mongoose.Schema({
+    firstname: String,
+    lastname: String,
+    telephone: Number,
+    address: String,
+    jobtitle: String,
+    jobdescription: String
+})
+
 // Define a Task schema
 const EmployeeSchema = new mongoose.Schema({
     firstname: String,
     lastname: String,
     password: String,
     email: String,
-    available: Boolean
+    available: Boolean,
+    booking: [BookingSchema],
 });
+const BookingModel = new mongoose.model("Bookings", BookingSchema)
 
 const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
 
@@ -29,7 +40,9 @@ async function registerEmployee(firstname, lastname, password, email) {
             lastname: lastname,
             password: password,
             email: email,
-            available: false
+            available: false,
+            bookings: []
+
         });
         await newEmployee.save();
         console.log("Saved new employee:", newEmployee);
@@ -37,7 +50,6 @@ async function registerEmployee(firstname, lastname, password, email) {
         console.error("Error:", err);
     }
 }
-
 
 
 async function hashPassword(password) {
