@@ -2,8 +2,9 @@ const express = require("express");
 const app = express();
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
-const registerTradesman = require("../generalFunctions/dbfunctions");
-const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../generalFunctions/dbfunctions");
+const registerTradesman = require("../Functions/general_functions");
+const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../Functions/general_functions");
+const { BookingModel } = require("../Functions/databaseSchema");
 
 
 const { ObjectId } = require('mongoose').Types;
@@ -42,6 +43,27 @@ app.post("/bookJob/:tradesmanEmail", async (req, res) => {
         res.status(500).json({ response: "Internal Server Error" });
     }
 });
+
+app.post("/bookJob", async (req, res) => {
+    try {
+        const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
+        const newBooking = await new BookingModel({
+            firstname: firstname,
+            lastname: lastname,
+            telephone: telephone,
+            address: address,
+            jobtitle: jobtitle,
+            jobdescription: jobdescription
+        })
+        await newBooking.save()
+        return res.status(200).json({ responce: `Job has been posted succesfully for a ${jobtitle} service ` })
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ response: "Internal Server Error" });
+    }
+});
+
 
 
 module.exports = app;
