@@ -2,8 +2,8 @@ const express = require("express");
 const app = express();
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
-const registerTradesman = require("../generalFunctions/dbfunctions");
-const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../generalFunctions/dbfunctions");
+const registerTradesman = require("../Functions/general_functions");
+const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../Functions/general_functions");
 
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
