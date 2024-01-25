@@ -24,6 +24,7 @@ const PostsSchema = new mongoose.Schema({
     title: String,
     createdAt: String,
     videoName: String,
+    tradesmansEmail: String,
 })
 
 // Define a Task schema
