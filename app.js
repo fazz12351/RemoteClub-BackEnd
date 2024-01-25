@@ -10,9 +10,9 @@ const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
 const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
 const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
 
-app.use("/login", TradesmanLoginRouter)
-app.use("/booking", CustomerBookingRouter)
-app.use("/posts", TradesmanPostRouter)
+app.use("/TradesmanLogin", TradesmanLoginRouter)
+app.use("/Customerbooking", CustomerBookingRouter)
+app.use("/TradesmaPosts", TradesmanPostRouter)
 
 const PORT = 3000;
 

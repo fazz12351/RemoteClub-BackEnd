@@ -49,7 +49,7 @@ app.post("/postJob", async (req, res) => {
     try {
         const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
 
-        // Create a new booking instance
+        // Create a new booking instance. //Add picttueres for video facility.
         const newBooking = new BookingModel({
             firstname,
             lastname,
