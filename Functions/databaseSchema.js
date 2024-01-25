@@ -20,6 +20,12 @@ const BookingSchema = new mongoose.Schema({
     jobdescription: String
 })
 
+const PostsSchema = new mongoose.Schema({
+    title: String,
+    createdAt: String,
+    videoName: String,
+})
+
 // Define a Task schema
 const EmployeeSchema = new mongoose.Schema({
     firstname: String,
@@ -28,9 +34,14 @@ const EmployeeSchema = new mongoose.Schema({
     email: String,
     available: Boolean,
     booking: [BookingSchema],
+    posts: [PostsSchema]
 });
+
+
 const BookingModel = new mongoose.model("Bookings", BookingSchema)
 
 const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
 
-module.exports = { BookingModel, EmployeeModel }
+const PostsModel = new mongoose.model("posts", PostsSchema);
+
+module.exports = { BookingModel, EmployeeModel, PostsModel }

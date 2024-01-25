@@ -1,4 +1,5 @@
 const { BookingModel, EmployeeModel } = require("./databaseSchema")
+const bcrypt = require("bcrypt")
 
 async function registerEmployee(firstname, lastname, password, email) {
     try {
@@ -21,6 +22,7 @@ async function registerEmployee(firstname, lastname, password, email) {
 
 async function hashPassword(password) {
     try {
+        const saltRounds = 10;
         const salt = await bcrypt.genSalt(saltRounds);
         const hashedPassword = await bcrypt.hash(password, salt);
         return hashedPassword;

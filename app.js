@@ -6,11 +6,11 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const loginRouter = require("./routes/login-routes")
-const bookingRouter = require("./routes/booking-routes")
+const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
+const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
 
-app.use("/login", loginRouter)
-app.use("/booking", bookingRouter)
+app.use("/login", TradesmanLoginRouter)
+app.use("/booking", CustomerBookingRouter)
 
 const PORT = 3000;
 
