@@ -5,6 +5,9 @@ const mongoose = require("mongoose");
 const registerTradesman = require("../../Functions/general_functions");
 const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../../Functions/general_functions");
 const { BookingModel } = require("../../Functions/databaseSchema");
+const bodyParser = require("body-parser");
+
+app.use(bodyParser.urlencoded({ extended: true }))
 
 
 const { ObjectId } = require('mongoose').Types;
@@ -48,6 +51,7 @@ app.post("/bookJob/:tradesmanEmail", async (req, res) => {
 app.post("/postJob", async (req, res) => {
     try {
         const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
+        console.log(req.body)
 
         // Create a new booking instance. //Add picttueres for video facility.
         const newBooking = new BookingModel({

@@ -14,27 +14,25 @@ const {
 app.use(express.json());
 
 
-app.post("/post/:TradesmanEmail", async (req, res) => {
+app.post("/post/:TradesmanId", async (req, res) => {
     try {
         const {
             title,
             createdAt,
             videoName
         } = req.body;
-        const tradesmanEmail = req.params.TradesmanEmail;
-        const exists = await EmployeeModel.find({
-            "email": `${tradesmanEmail}`
-        })
-        if (exists.length > 0) {
+        TradesmanId = req.params.TradesmanId
+        const exists = await EmployeeModel.findById(TradesmanId)
+        if (exists) {
             await EmployeeModel.updateOne({
-                "email": tradesmanEmail
+                "_id": TradesmanId
             }, {
                 $push: {
                     posts: {
                         title,
                         createdAt,
                         videoName,
-                        tradesmanEmail
+                        TradesmanId
                     }
                 }
             }, {
@@ -47,7 +45,7 @@ app.post("/post/:TradesmanEmail", async (req, res) => {
 
         } else {
             res.status(200).json({
-                responce: "Tradesmans email couldnt be found"
+                responce: "Tradesmans id couldnt be found"
             })
         }
 

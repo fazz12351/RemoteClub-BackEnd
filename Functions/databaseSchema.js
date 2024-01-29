@@ -11,21 +11,24 @@ db.once('open', () => {
     console.log('Connected to MongoDB');
 });
 
+const PostsSchema = new mongoose.Schema({
+    title: String,
+    createdAt: String,
+    videoName: String,
+    tradesmansId: String,
+})
+
+
 const BookingSchema = new mongoose.Schema({
     firstname: String,
     lastname: String,
     telephone: Number,
     address: String,
     jobtitle: String,
-    jobdescription: String
+    jobdescription: String,
+    video_name: PostsSchema
 })
 
-const PostsSchema = new mongoose.Schema({
-    title: String,
-    createdAt: String,
-    videoName: String,
-    tradesmansEmail: String,
-})
 
 // Define a Task schema
 const EmployeeSchema = new mongoose.Schema({
