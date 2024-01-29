@@ -12,14 +12,17 @@ app.use(bodyParser.urlencoded({ extended: true }))
 
 const { ObjectId } = require('mongoose').Types;
 
-app.post("/bookJob/:tradesmanEmail", async (req, res) => {
+app.post("/bookJob/:tradesmanId", async (req, res) => {
     try {
-        const tradesmansEmail = req.params.tradesmanEmail;
+        const tradesmansId = req.params.tradesmanId;
         const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
 
+        const tradesmansName = await EmployeeModel.findById({ "_id": tradesmansId })
+
+
         // Use findOneAndUpdate to find the tradesman by email and push a new job to the booking array
-        const updatedTradesman = await EmployeeModel.findOneAndUpdate(
-            { email: tradesmansEmail },
+        const updatedTradesman = await EmployeeModel.findByIdAndUpdate(
+            tradesmansId,
             {
                 $push: {
                     booking: {
@@ -36,7 +39,9 @@ app.post("/bookJob/:tradesmanEmail", async (req, res) => {
         );
 
         if (updatedTradesman) {
-            return res.status(200).json({ response: "Job booked successfully", tradesman: updatedTradesman });
+            return res.status(200).json({
+                response: `Job booked successfully with ${tradesmansName.firstname + " " + tradesmansName.lastname}`, jobDescription: req.body
+            });
         } else {
             return res.status(404).json({ response: "Tradesman not found" });
         }
@@ -51,7 +56,6 @@ app.post("/bookJob/:tradesmanEmail", async (req, res) => {
 app.post("/postJob", async (req, res) => {
     try {
         const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
-        console.log(req.body)
 
         // Create a new booking instance. //Add picttueres for video facility.
         const newBooking = new BookingModel({
