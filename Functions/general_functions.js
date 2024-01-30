@@ -40,6 +40,27 @@ async function comparePasswords(inputPassword, hashedPassword) {
     }
 }
 
+function checkToken(token) {
+    try {
+        const secretKey = "my_secret_key"
+        // Verify the token using the secret key
+        const decoded = jwt.verify(token, secretKey);
+
+        // If verification succeeds, the token is valid
+        console.log('Token is valid');
+        console.log('Decoded payload:', decoded);
+
+        // You can access specific claims from the decoded payload
+        // For example, user ID: decoded.sub
+
+        return true;
+    } catch (error) {
+        // If verification fails, the token is invalid
+        console.error('Token verification failed:', error.message);
+        return false;
+    }
+}
+
 
 
 

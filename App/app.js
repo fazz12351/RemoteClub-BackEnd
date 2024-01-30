@@ -1,7 +1,8 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-require('dotenv').config();
+const jwt = require("jsonwebtoken")
 
+require('dotenv').config();
 const app = express();
 
 // Middleware to parse JSON and URL-encoded request bodies
