@@ -11,16 +11,9 @@ const { generateToken, verifyToken } = require("../../Functions/authorisation");
 app.use(express.json());
 
 app.post("/test", verifyToken, async (req, res) => {
-    const userIdFromToken = req.user.firstname
+    const userIdFromToken = req.user
     console.log(userIdFromToken)
 
-});
-
-// Endpoint that requires a valid token
-app.get('/protected', verifyToken, (req, res) => {
-    // The verifyToken middleware has already decoded the token and set req.user
-    const userIdFromToken = req.user.email;
-    res.json({ message: `Protected endpoint accessed by user: ${userIdFromToken}` });
 });
 
 app.post("/register_Tradesman", async (req, res) => {
@@ -61,11 +54,12 @@ app.post("/login_Tradesman", async (req, res) => {
 
         const isPasswordValid = await comparePasswords(password, user.password);
 
+
         if (!isPasswordValid) {
             return res.status(401).json({ response: "User password is incorrect" });
         }
 
-        const userPayload = { email: user.email, /* Add other relevant claims */ };
+        const userPayload = { email: user.email, id: user.id /* Add other relevant claims */ };
         const token = generateToken(userPayload);
 
         return res.status(200).json({ token, response: "User successfully logged in" });
@@ -78,8 +72,7 @@ app.post("/login_Tradesman", async (req, res) => {
 
 app.post("/Online/:isOnline", verifyToken, async (req, res) => {
     try {
-
-        const { TradesmanId } = req.body;
+        const { TradesmanId } = req.user.id;
         const isOnline = parseInt(req.params.isOnline);
 
         if (isNaN(isOnline) || (isOnline !== 0 && isOnline !== 1)) {
