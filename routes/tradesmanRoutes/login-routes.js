@@ -10,7 +10,7 @@ const { generateToken, verifyToken } = require("../../Functions/authorisation");
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
 
-app.get("/test", verifyToken, async (req, res) => {
+app.post("/test", verifyToken, async (req, res) => {
     const userIdFromToken = req.user.firstname
     console.log(userIdFromToken)
 
@@ -76,8 +76,9 @@ app.post("/login_Tradesman", async (req, res) => {
 });
 
 
-app.post("/Online/:isOnline", async (req, res) => {
+app.post("/Online/:isOnline", verifyToken, async (req, res) => {
     try {
+
         const { TradesmanId } = req.body;
         const isOnline = parseInt(req.params.isOnline);
 
