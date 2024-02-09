@@ -34,7 +34,7 @@ app.post("/register_Tradesman", async (req, res) => {
         }
     } catch (err) {
         console.error("Error:", err);
-        return res.status(500).json({ response: "Internal Server Error" });
+        return res.status(500).json({ response: err });
     }
 });
 
