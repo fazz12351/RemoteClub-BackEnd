@@ -3,7 +3,7 @@ const app = express();
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
 const { hashPassword, registerEmployee, EmployeeModel, comparePasswords, PostsModel } = require("../../Functions/databaseSchema");
-const { verifyToken } = require("../../Functions/authorisation");
+const { verifyToken } = require("../../Functions/middleware/authorisation")
 
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());

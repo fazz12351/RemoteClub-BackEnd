@@ -5,7 +5,7 @@ const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken")
 const registerTradesman = require("../../Functions/general_functions");
 const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../../Functions/general_functions");
-const { generateToken, verifyToken } = require("../../Functions/authorisation");
+const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation")
 
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
