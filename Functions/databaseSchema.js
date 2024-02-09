@@ -1,10 +1,11 @@
 const mongoose = require("mongoose");
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://faeemahmed123:71CILCUmgi6R2uAb@remoteclub.xdttsc0.mongodb.net/?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_ATLAS_URL, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 
 const bcrypt = require('bcrypt');
 const saltRounds = 10; // Number of salt rounds
+
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
 db.once('open', () => {
