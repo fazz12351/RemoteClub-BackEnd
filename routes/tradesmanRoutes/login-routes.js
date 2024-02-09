@@ -10,9 +10,9 @@ const { generateToken, verifyToken } = require("../../Functions/middleware/autho
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
 
-app.post("/test", verifyToken, async (req, res) => {
+app.get("/test", verifyToken, async (req, res) => {
     const userIdFromToken = req.user
-    console.log(userIdFromToken)
+    res.status(200).json({ responce: "its working" })
 
 });
 
