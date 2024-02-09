@@ -9,9 +9,9 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const TradesmanLoginRouter = require("../routes/tradesmanRoutes/login-routes")
-const CustomerBookingRouter = require("../routes/customerRoutes/booking-routes")
-const TradesmanPostRouter = require("../routes/tradesmanRoutes/posts-routes")
+const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
+const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
+const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
 
 app.use("/TradesmanLogin", TradesmanLoginRouter)
 app.use("/Customerbooking", CustomerBookingRouter)
