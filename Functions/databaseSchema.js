@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
 // Connect to MongoDB
-mongoose.connect(process.env.MONGODB_ATLAS_URL, { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect('mongodb+srv://faeemahmed123:71CILCUmgi6R2uAb@remoteclub.xdttsc0.mongodb.net/?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 
 const bcrypt = require('bcrypt');
