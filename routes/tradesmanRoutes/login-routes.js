@@ -91,6 +91,18 @@ app.post("/Online/:isOnline", verifyToken, async (req, res) => {
     }
 });
 
+app.delete("/deleteUser", verifyToken, async (req, res) => {
+    try {
+        await EmployeeModel.deleteOne({ email: req.user.email }).then(() => {
+            res.status(200).json({ responce: "user deleted succesfully" })
+        })
+
+    }
+    catch (err) {
+        res.status(500).json({ err: "Internal server error" })
+    }
+})
+
 
 
 module.exports = app;
