@@ -3,27 +3,46 @@ const app = express();
 const mongodb = require("mongodb");
 const mongoose = require("mongoose");
 const registerTradesman = require("../../Functions/general_functions");
-const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../../Functions/general_functions");
-const { BookingModel } = require("../../Functions/databaseSchema");
+const {
+    hashPassword,
+    registerEmployee,
+    EmployeeModel,
+    comparePasswords
+} = require("../../Functions/general_functions");
+const {
+    BookingModel
+} = require("../../Functions/databaseSchema");
 const bodyParser = require("body-parser");
 
-app.use(bodyParser.urlencoded({ extended: true }))
+app.use(bodyParser.urlencoded({
+    extended: true
+}))
 
 
-const { ObjectId } = require('mongoose').Types;
+const {
+    ObjectId
+} = require('mongoose').Types;
 
 app.post("/bookJob/:tradesmanId", async (req, res) => {
     try {
         const tradesmansId = req.params.tradesmanId;
-        const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
+        const {
+            firstname,
+            lastname,
+            telephone,
+            address,
+            jobtitle,
+            jobdescription
+        } = req.body;
 
-        const tradesmansName = await EmployeeModel.findById({ "_id": tradesmansId })
+        const tradesmansName = await EmployeeModel.findById({
+            "_id": tradesmansId
+        })
 
 
         // Use findOneAndUpdate to find the tradesman by email and push a new job to the booking array
         const updatedTradesman = await EmployeeModel.findByIdAndUpdate(
-            tradesmansId,
-            {
+            tradesmansId, {
                 $push: {
                     booking: {
                         firstname,
@@ -34,28 +53,45 @@ app.post("/bookJob/:tradesmanId", async (req, res) => {
                         jobdescription,
                     }
                 }
-            },
-            { new: true } // Return the updated document
+            }, {
+                new: true
+            } // Return the updated document
         );
 
         if (updatedTradesman) {
             return res.status(200).json({
-                response: `Job booked successfully with ${tradesmansName.firstname + " " + tradesmansName.lastname}`, jobDescription: req.body
+                response: `Job booked successfully with ${tradesmansName.firstname + " " + tradesmansName.lastname}`,
+                jobDescription: req.body
             });
         } else {
-            return res.status(404).json({ response: "Tradesman not found" });
+            return res.status(404).json({
+                response: "Tradesman not found"
+            });
         }
-    }
-    catch (error) {
+    } catch (error) {
         console.error(error);
-        res.status(500).json({ response: "Internal Server Error" });
+        res.status(500).json({
+            response: "Internal Server Error"
+        });
     }
 });
 
 
 app.post("/postJob", async (req, res) => {
     try {
-        const { firstname, lastname, telephone, address, jobtitle, jobdescription } = req.body;
+        const {
+            firstname,
+            lastname,
+            telephone,
+            address,
+            jobtitle,
+            jobdescription
+        } = req.body;
+        if (!firstname || !lastname || !telephone || !address || !jobtitle || !jobdescription) {
+            return res.status(400).json({
+                responce: "missing fields"
+            })
+        }
 
         // Create a new booking instance. //Add picttueres for video facility.
         const newBooking = new BookingModel({
@@ -79,16 +115,18 @@ app.post("/postJob", async (req, res) => {
         console.error(error);
         // Handle validation errors
         if (error.name === "ValidationError") {
-            return res.status(400).json({ response: "Validation Error", errors: error.errors });
+            return res.status(400).json({
+                response: "Validation Error",
+                errors: error.errors
+            });
         }
         // Handle other errors
-        res.status(500).json({ response: "Internal Server Error" });
+        res.status(500).json({
+            response: "Internal Server Error"
+        });
     }
 });
 
 
 
 module.exports = app;
-
-
-
