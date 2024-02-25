@@ -7,15 +7,20 @@ const app = express();
 
 // Middleware to parse JSON and URL-encoded request bodies
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({
+    extended: true
+}));
 
 const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
 const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
 const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
+const TradesmanJob = require("./routes/tradesmanRoutes/jobs-routes")
 
 app.use("/TradesmanLogin", TradesmanLoginRouter)
 app.use("/Customerbooking", CustomerBookingRouter)
 app.use("/TradesmaPosts", TradesmanPostRouter)
+app.use("/TradesmanJob", TradesmanJob)
+
 
 const PORT = 3000;
 
