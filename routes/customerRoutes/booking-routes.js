@@ -79,7 +79,6 @@ app.post("/bookJob/:tradesmanId", async (req, res) => {
 
 app.post("/postJob",verifyToken, async (req, res) => {
     try {
-        
         const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
 
         const exists = await CustomerModel.findById(currentCustomerId);
@@ -89,8 +88,9 @@ app.post("/postJob",verifyToken, async (req, res) => {
         }
 
 
-        const {firstname,lastname,telephone,address,jobtitle,jobdescription} = req.body;
-        if (!firstname || !lastname || !telephone || !address || !jobtitle || !jobdescription) {
+        const {jobtitle,jobdescription} = req.body;
+        const {firstname,lastname,telephone,address}=exists
+        if (!jobtitle || !jobdescription) {
             return res.status(400).json({
                 responce: "missing fields"
             })
