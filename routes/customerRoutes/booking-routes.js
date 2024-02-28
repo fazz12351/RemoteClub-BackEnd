@@ -12,7 +12,9 @@ const {
     BookingModel
 } = require("../../Functions/databaseSchema");
 const bodyParser = require("body-parser");
-const { verifyToken } = require("../../Functions/middleware/authorisation");
+const {
+    verifyToken
+} = require("../../Functions/middleware/authorisation");
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -23,14 +25,11 @@ const {
     ObjectId
 } = require('mongoose').Types;
 
-app.post("/bookJob/:tradesmanId", async (req, res) => {
+app.post("/bookJob/:tradesmanId", verifyToken, async (req, res) => {
+
     try {
         const tradesmansId = req.params.tradesmanId;
         const {
-            firstname,
-            lastname,
-            telephone,
-            address,
             jobtitle,
             jobdescription
         } = req.body;
@@ -38,6 +37,16 @@ app.post("/bookJob/:tradesmanId", async (req, res) => {
         const tradesmansName = await EmployeeModel.findById({
             "_id": tradesmansId
         })
+
+        const customerInformation = await CustomerModel.findById({
+            "_id": req.user.id
+        })
+        const {
+            firstname,
+            lastname,
+            telephone,
+            address
+        } = customerInformation
 
 
         // Use findOneAndUpdate to find the tradesman by email and push a new job to the booking array
@@ -77,19 +86,29 @@ app.post("/bookJob/:tradesmanId", async (req, res) => {
 });
 
 
-app.post("/postJob",verifyToken, async (req, res) => {
+app.post("/postJob", verifyToken, async (req, res) => {
     try {
         const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
 
         const exists = await CustomerModel.findById(currentCustomerId);
 
-        if(!exists){
-            return res.status(404).json({responce:"Customer id doesnt exist"})
+        if (!exists) {
+            return res.status(404).json({
+                responce: "Customer id doesnt exist"
+            })
         }
 
 
-        const {jobtitle,jobdescription} = req.body;
-        const {firstname,lastname,telephone,address}=exists
+        const {
+            jobtitle,
+            jobdescription
+        } = req.body;
+        const {
+            firstname,
+            lastname,
+            telephone,
+            address
+        } = exists
         if (!jobtitle || !jobdescription) {
             return res.status(400).json({
                 responce: "missing fields"
@@ -106,13 +125,19 @@ app.post("/postJob",verifyToken, async (req, res) => {
             jobdescription,
         });
 
-    
+
 
         // Save the new booking to the database
         await newBooking.save();
 
         // Update the tradesman's booking
-        const updatedTradesman = await CustomerModel.findByIdAndUpdate(currentCustomerId,{ $push: { jobsPosted: newBooking } },{ new: true }) // Return the updated document 
+        const updatedTradesman = await CustomerModel.findByIdAndUpdate(currentCustomerId, {
+            $push: {
+                jobsPosted: newBooking
+            }
+        }, {
+            new: true
+        }) // Return the updated document 
 
         return res.status(200).json({
             response: `Job has been posted successfully for a ${jobtitle} service`,
