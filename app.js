@@ -20,7 +20,7 @@ const TradesmanJob = require("./routes/tradesmanRoutes/jobs-routes")
 const TradesmansProfile=require("./routes/tradesmanRoutes/profile-routes")
 
 
-app.use("/Customerbooking", CustomerBookingRouter)
+app.use("/CustomerBooking", CustomerBookingRouter)
 app.use("/CustomerLogin",CustomerLogin)
 
 app.use("/TradesmanLogin", TradesmanLoginRouter)

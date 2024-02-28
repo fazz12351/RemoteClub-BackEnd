@@ -4,15 +4,15 @@ const mongodb = require("mongodb");
 const mongoose = require("mongoose");
 const registerTradesman = require("../../Functions/general_functions");
 const {
-    hashPassword,
-    registerEmployee,
     EmployeeModel,
-    comparePasswords
+
 } = require("../../Functions/general_functions");
 const {
+    CustomerModel,
     BookingModel
 } = require("../../Functions/databaseSchema");
 const bodyParser = require("body-parser");
+const { verifyToken } = require("../../Functions/middleware/authorisation");
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -77,16 +77,19 @@ app.post("/bookJob/:tradesmanId", async (req, res) => {
 });
 
 
-app.post("/postJob", async (req, res) => {
+app.post("/postJob",verifyToken, async (req, res) => {
     try {
-        const {
-            firstname,
-            lastname,
-            telephone,
-            address,
-            jobtitle,
-            jobdescription
-        } = req.body;
+        
+        const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
+
+        const exists = await CustomerModel.findById(currentCustomerId);
+
+        if(!exists){
+            return res.status(404).json({responce:"Customer id doesnt exist"})
+        }
+
+
+        const {firstname,lastname,telephone,address,jobtitle,jobdescription} = req.body;
         if (!firstname || !lastname || !telephone || !address || !jobtitle || !jobdescription) {
             return res.status(400).json({
                 responce: "missing fields"
@@ -103,10 +106,14 @@ app.post("/postJob", async (req, res) => {
             jobdescription,
         });
 
+    
+
         // Save the new booking to the database
         await newBooking.save();
 
-        // Respond with a success message
+        // Update the tradesman's booking
+        const updatedTradesman = await CustomerModel.findByIdAndUpdate(currentCustomerId,{ $push: { jobsPosted: newBooking } },{ new: true }) // Return the updated document 
+
         return res.status(200).json({
             response: `Job has been posted successfully for a ${jobtitle} service`,
             bookingInformation: newBooking,
