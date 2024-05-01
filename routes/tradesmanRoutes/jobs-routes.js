@@ -15,7 +15,7 @@ app.use(bodyParser.urlencoded({
     extended: true
 }));
 
-app.get("/openJobs", async (req, res) => {
+app.get("/openJobs", verifyToken, async (req, res) => {
     try {
         const availableJobs = await BookingModel.find({});
         res.status(200).json({
@@ -55,8 +55,8 @@ app.post("/openJob/:job_id", verifyToken, async (req, res) => {
         if (!updatedTradesman) {
             return res.status(404).json({ response: "Tradesman not found" });
         }
-        
-        await BookingModel.deleteOne({_id:jobId})
+
+        await BookingModel.deleteOne({ _id: jobId })
         return res.status(200).json({ response: "Job added to Booking" });
     } catch (err) {
         console.error(err);
