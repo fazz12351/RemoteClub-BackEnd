@@ -1,6 +1,7 @@
 const express = require("express");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken")
+const cors = require("cors")
 
 require('dotenv').config();
 const app = express();
@@ -12,21 +13,21 @@ app.use(express.urlencoded({
 }));
 
 const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
-const CustomerLogin=require("./routes/customerRoutes/login-routes")
+const CustomerLogin = require("./routes/customerRoutes/login-routes")
 
 const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
 const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
 const TradesmanJob = require("./routes/tradesmanRoutes/jobs-routes")
-const TradesmansProfile=require("./routes/tradesmanRoutes/profile-routes")
+const TradesmansProfile = require("./routes/tradesmanRoutes/profile-routes")
 
+app.use(cors())
 
 app.use("/CustomerBooking", CustomerBookingRouter)
-app.use("/CustomerLogin",CustomerLogin)
-
+app.use("/CustomerLogin", CustomerLogin)
 app.use("/TradesmanLogin", TradesmanLoginRouter)
 app.use("/TradesmaPosts", TradesmanPostRouter)
 app.use("/TradesmanJob", TradesmanJob)
-app.use("/TradesmanProfile",TradesmansProfile)
+app.use("/TradesmanProfile", TradesmansProfile)
 
 
 const PORT = 3000;
