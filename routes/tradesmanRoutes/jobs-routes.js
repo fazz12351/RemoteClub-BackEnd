@@ -64,7 +64,7 @@ app.post("/openJob/:job_id", verifyToken, async (req, res) => {
     }
 });
 
-app.delete("/openJob/:job_id", async (req, res) => {
+app.delete("/openJob/:job_id", verifyToken, async (req, res) => {
     try {
         const tradesmanId = req.user.id // Assuming this is a valid Tradesman ID
         const jobId = req.params.job_id;
