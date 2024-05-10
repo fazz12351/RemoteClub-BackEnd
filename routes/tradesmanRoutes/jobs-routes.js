@@ -64,6 +64,60 @@ app.post("/openJob/:job_id", verifyToken, async (req, res) => {
     }
 });
 
+app.delete("/openJob/:job_id", async (req, res) => {
+    try {
+        const tradesmanId = req.user.id // Assuming this is a valid Tradesman ID
+        const jobId = req.params.job_id;
+
+        // Check if jobId is a valid ObjectId
+        if (!mongoose.Types.ObjectId.isValid(jobId)) {
+            return res.status(400).json({ response: "Invalid Job ID format" });
+        }
+
+        // Find the tradesman by ID
+        let tradesman = await EmployeeModel.findById(tradesmanId);
+
+        // Check if the tradesman exists
+        if (!tradesman) {
+            return res.status(404).json({ response: "Tradesman not found" });
+        }
+        let bookings = tradesman.booking
+        let bookingInfo = null
+        for (let i = 0; i < bookings.length; i++) {
+            if (bookings[i]._id == jobId) {
+                bookingInfo = bookings[i]
+                bookings.splice(i, 1)
+
+            }
+        }
+        if (bookingInfo == null) {
+            return res.status(404).json({ response: "Job was not found with this tradesmans" });
+        }
+
+
+        // Update the tradesman document with the modified bookings array
+        await EmployeeModel.findByIdAndUpdate(tradesmanId, { booking: bookings }).then(() => {
+            const { firstname, lastname, telephone, address, jobtitle, jobdescription } = bookingInfo
+            const newBooking = new BookingModel({
+                firstname: firstname,
+                lastname: lastname,
+                telephone: telephone,
+                address: address,
+                jobtitle: jobtitle,
+                jobdescription: jobdescription
+            })
+            newBooking.save()
+            return res.status(200).json({ response: "Job removed from tradesman booking and added back to openJobs" });
+
+        })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
+
+
 
 
 
