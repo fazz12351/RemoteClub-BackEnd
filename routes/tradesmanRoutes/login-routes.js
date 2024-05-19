@@ -40,7 +40,6 @@ app.post("/register_Tradesman", async (req, res) => {
 
 app.post("/login_Tradesman", async (req, res) => {
     try {
-        console.log("being called")
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -103,6 +102,7 @@ app.delete("/deleteUser", verifyToken, async (req, res) => {
         res.status(500).json({ err: "Internal server error" })
     }
 })
+
 
 
 module.exports = app;
