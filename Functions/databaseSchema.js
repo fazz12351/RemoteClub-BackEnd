@@ -1,10 +1,14 @@
 const mongoose = require("mongoose");
+require('dotenv').config();
+
+
+
 // Connect to MongoDB
-mongoose.connect('mongodb+srv://faeemahmed123:71CILCUmgi6R2uAb@remoteclub.xdttsc0.mongodb.net/?retryWrites=true&w=majority', { useNewUrlParser: true, useUnifiedTopology: true });
+mongoose.connect(process.env.MONGODB_CONNECTION_ENDPOINT, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 
 const bcrypt = require('bcrypt');
-const saltRounds = 10; // Number of salt rounds
+const saltRounds = process.env.SALT_ROUNDS; // Number of salt rounds
 
 
 db.on('error', console.error.bind(console, 'MongoDB connection error:'));
@@ -30,14 +34,14 @@ const BookingSchema = new mongoose.Schema({
     video_name: PostsSchema
 })
 
-const CustomerSchema=new mongoose.Schema({
-    firstname:String,
-    lastname:String,
-    password:String,
-    address:String,
-    telephone:Number,
-    email:String,
-    jobsPosted:[BookingSchema]
+const CustomerSchema = new mongoose.Schema({
+    firstname: String,
+    lastname: String,
+    password: String,
+    address: String,
+    telephone: Number,
+    email: String,
+    jobsPosted: [BookingSchema]
 })
 
 
@@ -53,7 +57,7 @@ const EmployeeSchema = new mongoose.Schema({
 });
 
 
-const CustomerModel=new mongoose.model("customer",CustomerSchema)
+const CustomerModel = new mongoose.model("customer", CustomerSchema)
 
 const BookingModel = new mongoose.model("Bookings", BookingSchema)
 
@@ -61,4 +65,4 @@ const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
 
 const PostsModel = new mongoose.model("posts", PostsSchema);
 
-module.exports = { BookingModel, EmployeeModel, PostsModel,CustomerModel}
+module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel }
