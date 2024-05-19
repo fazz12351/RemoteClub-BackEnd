@@ -1,5 +1,9 @@
 const { BookingModel, EmployeeModel } = require("./databaseSchema")
 const bcrypt = require("bcrypt")
+const s3Client = require("../Functions/configuration")
+require('dotenv').config();
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 async function registerEmployee(firstname, lastname, password, email) {
     try {
@@ -41,11 +45,55 @@ async function comparePasswords(inputPassword, hashedPassword) {
 }
 
 
+const s3Upload = async (file, currentTime) => {
+    // Handle if file is not present
+    if (!file) {
+        throw new Error('File is undefined');
+    }
+
+    const params = {
+        Bucket: process.env.AWS_BUCKET,
+        Key: `${file.originalname}${currentTime}`,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+    };
+
+    const s3PutCommand = new PutObjectCommand(params);
+    await s3Client.send(s3PutCommand);
+
+    return file.originalname;
+};
+
+const s3Retrieve = async (fileName) => {
+    try {
+        const command = new GetObjectCommand({
+            Bucket: process.env.AWS_BUCKET,
+            Key: fileName,
+        });
+
+        const urlExpiration = 3600;
+
+        const fileUrl = await getSignedUrl(s3Client, command, {
+            expiresIn: urlExpiration,
+            responseContentDisposition: 'inline' // Display the file in the browser
+        });
+
+        return fileUrl;
+
+    } catch (error) {
+        console.error("Error generating pre-signed URL:", error);
+        throw error;
+    }
+};
 
 
 
 
-module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel }
+
+
+
+
+module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel, s3Retrieve, s3Upload }
 
 
 

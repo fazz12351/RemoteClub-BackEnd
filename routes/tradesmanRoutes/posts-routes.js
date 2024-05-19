@@ -5,16 +5,15 @@ const { EmployeeModel } = require("../../Functions/databaseSchema");
 const multer = require("multer");
 const upload = multer();
 const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation");
-const { s3Upload, s3Retrieve } = require("../../Functions/configuration");
+const { s3Retrieve, s3Upload } = require("../../Functions/general_functions")
 const { SupportApp } = require("aws-sdk");
 
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
 
 // Endpoint used to add new posts to the logged-in user
-app.post("/upload", verifyToken, upload.any(), async (req, res) => {
+app.post("/", verifyToken, upload.any(), async (req, res) => {
     try {
-        console.log("being called")
         const { title } = req.body;
         const date = new Date();
         const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
@@ -56,7 +55,7 @@ app.post("/upload", verifyToken, upload.any(), async (req, res) => {
     }
 });
 
-app.get("/posts", verifyToken, async (req, res) => {
+app.get("/", verifyToken, async (req, res) => {
     try {
         const TradesmanId = req.user.id
         const exists = await EmployeeModel.findById(TradesmanId);
