@@ -1,65 +1,69 @@
 const express = require("express");
 const app = express();
-const mongodb = require("mongodb");
 const mongoose = require("mongoose");
-const { hashPassword, registerEmployee, EmployeeModel, comparePasswords, PostsModel } = require("../../Functions/databaseSchema");
-const { verifyToken } = require("../../Functions/middleware/authorisation")
-const multer = require("multer")
-const upload = multer()
+const { EmployeeModel } = require("../../Functions/databaseSchema");
+const multer = require("multer");
+const upload = multer();
+const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation");
+const { s3Upload, s3Retrieve } = require("../../Functions/configuration");
+const { SupportApp } = require("aws-sdk");
+
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
 
-
-
-
-//endpoint used to add new posts to the logged in user. 
+// Endpoint used to add new posts to the logged-in user
 app.post("/upload", upload.any(), async (req, res) => {
     try {
         const { title } = req.body;
-        let videoName = null
-        let date = new Date()
-        let createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth()}/${date.getFullYear()} `
-        if (title.length < 1 || createdAt.length < 1) {
-            return res.status(200).json({ responce: "Ensure to add title, video and the date created" })
+        const date = new Date();
+        const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+
+        if (!title || title.length < 1 || !createdAt || createdAt.length < 1) {
+            return res.status(400).json({ response: "Ensure to add title and the date created" });
         }
-        if (req.files.length > 0) {
-            videoName = req.files[0].originalname
+        const TradesmanId = "66381bb4d56b0934e891131b";
+
+        const exists = await EmployeeModel.findById(TradesmanId);
+
+        if (!exists) {
+            return res.status(404).json({ response: "Tradesman's id could not be found" });
         }
 
-        // TradesmanId = req.user.id
-        TradesmanId = "663804edd56b0934e8910d63"
+        // Assuming you want to upload the first file in the req.files array
+        if (req.files.length === 0) {
+            return res.status(400).json({ response: "No files uploaded" });
+        }
 
-        const exists = await EmployeeModel.findById(TradesmanId)
+        await s3Upload(req.files[0]);
 
-        if (exists) {
-            await EmployeeModel.updateOne({ "_id": TradesmanId }, {
-                $push: {
-                    posts: {
-                        title,
-                        createdAt,
-                        videoName,
-                        TradesmanId
-                    }
+        // Save post to database
+        await EmployeeModel.findByIdAndUpdate(TradesmanId, {
+            $push: {
+                posts: {
+                    title,
+                    createdAt,
+                    videoName: req.files[0].originalname,
+                    TradesmanId
                 }
-            },
-                { new: true }) // Return the updated document)
-            res.status(200).json({
-                responce: "Succesfully posted"
-            })
+            }
+        });
 
-        } else {
-            res.status(200).json({
-                responce: "Tradesmans id couldnt be found"
-            })
-        }
-
+        res.status(200).json({ response: "Successfully posted" });
     } catch (err) {
-        res.status(500).json({
-            responce: "Internal Server Error"
-        })
+        console.error(err);
+        res.status(500).json({ response: "Internal Server Error" });
     }
+});
 
+app.get("/posts", async (req, res) => {
+    try {
+        const posts = await s3Retrieve("example.mp4")
+        return res.status(200).json({ responce: posts })
+
+    }
+    catch (err) {
+        console.log(err)
+    }
 })
-
 
 module.exports = app;
