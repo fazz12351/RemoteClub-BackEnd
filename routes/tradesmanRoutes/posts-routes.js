@@ -12,16 +12,16 @@ const { SupportApp } = require("aws-sdk");
 app.use(express.json());
 
 // Endpoint used to add new posts to the logged-in user
-app.post("/upload", upload.any(), async (req, res) => {
+app.post("/upload", verifyToken, upload.any(), async (req, res) => {
     try {
         const { title } = req.body;
         const date = new Date();
         const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-
+        const time = createdAt.split(" ")[0]
         if (!title || title.length < 1 || !createdAt || createdAt.length < 1) {
             return res.status(400).json({ response: "Ensure to add title and the date created" });
         }
-        const TradesmanId = "66381bb4d56b0934e891131b";
+        const TradesmanId = req.user.id;
 
         const exists = await EmployeeModel.findById(TradesmanId);
 
@@ -34,19 +34,18 @@ app.post("/upload", upload.any(), async (req, res) => {
             return res.status(400).json({ response: "No files uploaded" });
         }
 
-        await s3Upload(req.files[0]);
-
         // Save post to database
         await EmployeeModel.findByIdAndUpdate(TradesmanId, {
             $push: {
                 posts: {
                     title,
                     createdAt,
-                    videoName: req.files[0].originalname,
+                    videoName: `${req.files[0].originalname}${time}`,
                     TradesmanId
                 }
             }
         });
+        await s3Upload(req.files[0], time);
 
         res.status(200).json({ response: "Successfully posted" });
     } catch (err) {
@@ -55,10 +54,18 @@ app.post("/upload", upload.any(), async (req, res) => {
     }
 });
 
-app.get("/posts", async (req, res) => {
+app.get("/posts", verifyToken, async (req, res) => {
     try {
-        const posts = await s3Retrieve("example.mp4")
-        return res.status(200).json({ responce: posts })
+        const TradesmanId = req.user.id
+        const exists = await EmployeeModel.findById(TradesmanId);
+        const posts = exists.posts
+
+        for (let i = 0; i < posts.length; i++) {
+            if (posts[i].videoName != null) {
+                posts[i].videoName = await s3Retrieve(posts[i].videoName)
+            }
+        }
+        return res.status(200).json({ videos: posts })
 
     }
     catch (err) {

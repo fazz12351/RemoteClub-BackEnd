@@ -27,9 +27,10 @@ AWS.config.update({
     signatureVersion: 'v4' // Use AWS Signature Version 4
 });
 
+
 const s3 = new AWS.S3();
 
-const s3Upload = async (file) => {
+const s3Upload = async (file, currentTime) => {
     // Hanldes  if file is not present
     if (!file) {
         throw new Error('File is undefined')
@@ -41,7 +42,7 @@ const s3Upload = async (file) => {
 
     const params = {
         Bucket: "remoteclub-s3-bucket1",
-        Key: file.originalname,
+        Key: `${file.originalname}${currentTime}`,
         Body: file.buffer,
         ContentType: file.mimetype,
     };
