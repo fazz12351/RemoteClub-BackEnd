@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken")
 const cors = require("cors")
 const { s3Upload, s3Retrieve } = require("./Functions/configuration")
 
-require('dotenv').config();
 const app = express();
 
 // Middleware to parse JSON and URL-encoded request bodies
@@ -36,4 +35,6 @@ const PORT = 3000;
 app.listen(PORT, async () => {
     console.log(`Server is running on Port ${PORT}`);
 });
+
+
 

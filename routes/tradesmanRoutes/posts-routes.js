@@ -14,6 +14,7 @@ app.use(express.json());
 // Endpoint used to add new posts to the logged-in user
 app.post("/upload", verifyToken, upload.any(), async (req, res) => {
     try {
+        console.log("being called")
         const { title } = req.body;
         const date = new Date();
         const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
@@ -22,6 +23,7 @@ app.post("/upload", verifyToken, upload.any(), async (req, res) => {
             return res.status(400).json({ response: "Ensure to add title and the date created" });
         }
         const TradesmanId = req.user.id;
+
 
         const exists = await EmployeeModel.findById(TradesmanId);
 

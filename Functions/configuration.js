@@ -1,44 +1,21 @@
-const AWS = require("aws-sdk");
-const { S3Client } = require("@aws-sdk/client-s3");
-const {
-    DeleteObjectCommand,
-    PutObjectCommand,
-    GetObjectCommand
-} = require("@aws-sdk/client-s3");
-
-const {
-    getSignedUrl
-} = require("@aws-sdk/s3-request-presigner");
+require('dotenv').config();
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 
 const s3Client = new S3Client({
-    region: "eu-west-2",
+    region: process.env.AWS_REGION,
     credentials: {
-        accessKeyId: "AKIAYFCINAAS3HPUQFHF",
-        secretAccessKey: "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"
+        accessKeyId: process.env.AWS_ACESS_KEY,
+        secretAccessKey: process.env.AWS_SECRET_ACESS_KEY
     }
 });
-
-// Update AWS configuration with the correct region
-AWS.config.update({
-    accessKeyId: 'AKIAYFCINAAS3HPUQFHF',
-    secretAccessKey: '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',
-    region: 'eu-west-2', // London region
-    signatureVersion: 'v4' // Use AWS Signature Version 4
-});
-
-
-const s3 = new AWS.S3();
 
 const s3Upload = async (file, currentTime) => {
-    // Hanldes  if file is not present
+    // Handle if file is not present
     if (!file) {
-        throw new Error('File is undefined')
+        throw new Error('File is undefined');
     }
-
-
-    /* Resize the image to the what is specified (DOESNT WORK WITH VIDEOS) */
-    //const buffer = await sharp(file.buffer).resize({height: 1920, width: 1080, fit: "contain"}).toBuffer()
 
     const params = {
         Bucket: "remoteclub-s3-bucket1",
@@ -50,7 +27,7 @@ const s3Upload = async (file, currentTime) => {
     const s3PutCommand = new PutObjectCommand(params);
     await s3Client.send(s3PutCommand);
 
-    return file.originalname
+    return file.originalname;
 };
 
 const s3Retrieve = async (fileName) => {
@@ -63,7 +40,8 @@ const s3Retrieve = async (fileName) => {
         const urlExpiration = 3600;
 
         const fileUrl = await getSignedUrl(s3Client, command, {
-            expiresIn: urlExpiration
+            expiresIn: urlExpiration,
+            responseContentDisposition: 'inline' // Display the file in the browser
         });
 
         return fileUrl;
@@ -73,9 +51,5 @@ const s3Retrieve = async (fileName) => {
         throw error;
     }
 };
-
-
-
-
 
 module.exports = { s3Upload, s3Retrieve };
