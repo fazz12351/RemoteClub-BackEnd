@@ -1,5 +1,7 @@
 const { BookingModel, EmployeeModel } = require("./databaseSchema")
-const bcrypt = require("bcrypt")
+// const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+
 const s3Client = require("../Functions/configuration")
 require('dotenv').config();
 const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");

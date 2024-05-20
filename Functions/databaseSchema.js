@@ -7,7 +7,9 @@ require('dotenv').config();
 mongoose.connect(process.env.MONGODB_CONNECTION_ENDPOINT, { useNewUrlParser: true, useUnifiedTopology: true });
 const db = mongoose.connection;
 
-const bcrypt = require('bcrypt');
+// const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
+
 const saltRounds = process.env.SALT_ROUNDS; // Number of salt rounds
 
 
