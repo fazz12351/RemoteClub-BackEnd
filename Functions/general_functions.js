@@ -4,7 +4,7 @@ const bcrypt = require('bcryptjs');
 
 const s3Client = require("../Functions/configuration")
 require('dotenv').config();
-const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
 async function registerEmployee(firstname, lastname, password, email) {
@@ -88,14 +88,28 @@ const s3Retrieve = async (fileName) => {
     }
 };
 
+const s3Delete = async (fileName) => {
+    try {
+        const command = new DeleteObjectCommand({
+            Bucket: process.env.AWS_BUCKET,
+            Key: fileName,
+        });
+
+        const response = await s3Client.send(command);
+        console.log("Successfully deleted:", response);
+        return response;
+    } catch (error) {
+        console.error("Error deleting object:", error);
+        throw error;
+    }
+};
 
 
 
 
 
 
-
-module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel, s3Retrieve, s3Upload }
+module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel, s3Retrieve, s3Upload, s3Delete }
 
 
 

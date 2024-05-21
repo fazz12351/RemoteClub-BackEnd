@@ -5,7 +5,7 @@ const { EmployeeModel } = require("../../Functions/databaseSchema");
 const multer = require("multer");
 const upload = multer();
 const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation");
-const { s3Retrieve, s3Upload } = require("../../Functions/general_functions")
+const { s3Retrieve, s3Upload, s3Delete } = require("../../Functions/general_functions")
 const { SupportApp } = require("aws-sdk");
 
 // This middleware is necessary to parse the request body in JSON format
@@ -71,6 +71,37 @@ app.get("/", verifyToken, async (req, res) => {
     }
     catch (err) {
         console.log(err)
+    }
+})
+app.delete("/delete/:postId", verifyToken, async (req, res) => {
+    try {
+        const post_Id = req.params.postId
+        const tradesmansId = req.user.id
+
+        const exists = await EmployeeModel.findById(tradesmansId)
+        if (exists) {
+            let posts = exists.posts
+            for (let i = 0; i < posts.length; i++) {
+                if (posts[i].id == post_Id) {
+                    await s3Delete(posts[i].videoName)
+                    posts.splice(i, 1)
+                    exists.posts = posts
+                    exists.save()
+                    return res.status(200).json({ responce: "Post deleted succesfully" })
+
+                }
+            }
+            return res.status(204).json({ responce: "post not found" })
+
+        }
+        else {
+            return res.status(204).json({ Error: "Tradesmans not found" })
+        }
+
+    }
+    catch (err) {
+
+        return res.status(400).json({ Error: err })
     }
 })
 
