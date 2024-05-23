@@ -47,7 +47,7 @@ async function comparePasswords(inputPassword, hashedPassword) {
 }
 
 
-const s3Upload = async (file, currentTime) => {
+const s3Upload = async (file, currentTime, userId) => {
     // Handle if file is not present
     if (!file) {
         throw new Error('File is undefined');
@@ -55,7 +55,7 @@ const s3Upload = async (file, currentTime) => {
 
     const params = {
         Bucket: process.env.AWS_BUCKET,
-        Key: `${file.originalname}${currentTime}`,
+        Key: `${userId}@${currentTime}${file.originalname}`,
         Body: file.buffer,
         ContentType: file.mimetype,
     };
