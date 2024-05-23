@@ -21,7 +21,7 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
         if (!title || title.length < 1 || !createdAt || createdAt.length < 1) {
             return res.status(400).json({ response: "Ensure to add title and the date created" });
         }
-        const TradesmanId = req.user.id;
+        const TradesmanId = req.user.id
 
 
         const exists = await EmployeeModel.findById(TradesmanId);
@@ -41,12 +41,12 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
                 posts: {
                     title,
                     createdAt,
-                    videoName: `${req.files[0].originalname}${time}`,
+                    videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
                     TradesmanId
                 }
             }
         });
-        await s3Upload(req.files[0], time);
+        await s3Upload(req.files[0], time, TradesmanId);
 
         res.status(200).json({ response: "Successfully posted" });
     } catch (err) {
