@@ -1,6 +1,7 @@
 const { BookingModel, EmployeeModel } = require("./databaseSchema")
 // const bcrypt = require('bcrypt');
 const bcrypt = require('bcryptjs');
+const axios = require("axios")
 
 const s3Client = require("../Functions/configuration")
 require('dotenv').config();
@@ -103,13 +104,28 @@ const s3Delete = async (fileName) => {
         throw error;
     }
 };
+const getCoordinates = async (address) => {
+    const apiKey = process.env.GEOLOCATIONAPI; // Replace with your OpenCage API key
+    const url = `https://api.opencagedata.com/geocode/v1/json?q=${address}&key=${apiKey}`;
+    try {
+        const response = await axios.get(url);
+        if (response.data.results.length > 0) {
+            return true
+        } else {
+            return false
+        }
+    } catch (error) {
+        return error
+
+    }
+};
 
 
 
 
 
 
-module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel, s3Retrieve, s3Upload, s3Delete }
+module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel, s3Retrieve, s3Upload, s3Delete, getCoordinates }
 
 
 

@@ -1,20 +1,9 @@
 const express = require("express");
 const app = express();
-const mongodb = require("mongodb");
-const mongoose = require("mongoose");
-const registerTradesman = require("../../Functions/general_functions");
-const {
-    EmployeeModel,
-
-} = require("../../Functions/general_functions");
-const {
-    CustomerModel,
-    BookingModel
-} = require("../../Functions/databaseSchema");
+const { EmployeeModel, getCoordinates } = require("../../Functions/general_functions");
+const { CustomerModel, BookingModel } = require("../../Functions/databaseSchema");
 const bodyParser = require("body-parser");
-const {
-    verifyToken
-} = require("../../Functions/middleware/authorisation");
+const { verifyToken } = require("../../Functions/middleware/authorisation");
 
 app.use(bodyParser.urlencoded({
     extended: true
@@ -52,19 +41,19 @@ app.post("/bookJob/:tradesmanId", verifyToken, async (req, res) => {
         // Use findOneAndUpdate to find the tradesman by email and push a new job to the booking array
         const updatedTradesman = await EmployeeModel.findByIdAndUpdate(
             tradesmansId, {
-                $push: {
-                    booking: {
-                        firstname,
-                        lastname,
-                        telephone,
-                        address,
-                        jobtitle,
-                        jobdescription,
-                    }
+            $push: {
+                booking: {
+                    firstname,
+                    lastname,
+                    telephone,
+                    address,
+                    jobtitle,
+                    jobdescription,
                 }
-            }, {
-                new: true
-            } // Return the updated document
+            }
+        }, {
+            new: true
+        } // Return the updated document
         );
 
         if (updatedTradesman) {
@@ -90,6 +79,7 @@ app.post("/postJob", verifyToken, async (req, res) => {
     try {
         const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
 
+
         const exists = await CustomerModel.findById(currentCustomerId);
 
         if (!exists) {
@@ -98,22 +88,29 @@ app.post("/postJob", verifyToken, async (req, res) => {
             })
         }
 
-
         const {
             jobtitle,
-            jobdescription
+            jobdescription,
+            address
         } = req.body;
         const {
             firstname,
             lastname,
             telephone,
-            address
         } = exists
         if (!jobtitle || !jobdescription) {
             return res.status(400).json({
                 responce: "missing fields"
             })
         }
+        const validAddress = await getCoordinates(address)
+
+        if (validAddress === false || address.length < 2) {
+            return res.status(400).json({
+                error: "The address you entered doesn't seem to exist. Please ensure to add a valid location either using a postcode or a full address."
+            });
+        }
+
 
         // Create a new booking instance. //Add picttueres for video facility.
         const newBooking = new BookingModel({
@@ -125,13 +122,11 @@ app.post("/postJob", verifyToken, async (req, res) => {
             jobdescription,
         });
 
-
-
         // Save the new booking to the database
         await newBooking.save();
 
         // Update the tradesman's booking
-        const updatedTradesman = await CustomerModel.findByIdAndUpdate(currentCustomerId, {
+        await CustomerModel.findByIdAndUpdate(currentCustomerId, {
             $push: {
                 jobsPosted: newBooking
             }
