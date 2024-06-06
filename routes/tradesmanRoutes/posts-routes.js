@@ -91,10 +91,10 @@ app.get("/allPosts", verifyToken, async (req, res) => {
         //filter the post by tradesmans id != current tradesman
         const filteredPosts = []
         for (let i = 0; i < allPost.length; i++) {
-            if (allPost[i].tradesmansId != user_id) {
-                allPost[i].videoName = (allPost[i].videoName != null ? await s3Retrieve(allPost[i].videoName) : null)
-                filteredPosts.push(allPost[i])
-            }
+            // if (allPost[i].tradesmansId != user_id) {
+            allPost[i].videoName = (allPost[i].videoName != null ? await s3Retrieve(allPost[i].videoName) : null)
+            filteredPosts.push(allPost[i])
+            // }
 
         }
         //return the filtered posts
