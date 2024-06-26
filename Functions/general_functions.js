@@ -3,7 +3,7 @@ const { BookingModel, EmployeeModel } = require("./databaseSchema")
 const bcrypt = require('bcryptjs');
 const axios = require("axios")
 
-const s3Client = require("../Functions/configuration")
+const { s3Client } = require("../Functions/configuration")
 require('dotenv').config();
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");

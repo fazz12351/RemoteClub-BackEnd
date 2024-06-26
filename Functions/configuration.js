@@ -4,7 +4,7 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const Twilio = require('twilio/lib/rest/Twilio');
 // Your Twilio credentials
 
-console.log(process.env.ACCOUNTSID)
+
 const accountSid = process.env.ACCOUNTSID; // Replace with your Account SID from www.twilio.com/console
 const authToken = process.env.AUTHTOKENTWILIO   // Replace with your Auth Token from www.twilio.com/console
 
