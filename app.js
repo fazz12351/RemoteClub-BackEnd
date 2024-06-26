@@ -6,6 +6,8 @@ const { s3Upload, s3Retrieve } = require("./Functions/configuration")
 
 const app = express();
 
+const sendMessage = require("./Functions/Twilio")
+
 // Middleware to parse JSON and URL-encoded request bodies
 app.use(express.json());
 app.use(express.urlencoded({
@@ -35,6 +37,8 @@ const PORT = 3000;
 app.listen(PORT, async () => {
     console.log(`Server is running on Port ${PORT}`);
 });
+
+
 
 
 

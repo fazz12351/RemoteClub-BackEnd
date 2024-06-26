@@ -8,9 +8,10 @@ function generateToken(user) {
     const payload = {
         id: user.id,
         email: user.email,
+        telephone: (user.telephone || null)
         // Add other relevant claims as needed
     };
-    return jwt.sign(payload, secretKey, { expiresIn: '1h' }); // Example: Token expires in 1 hour
+    return jwt.sign(payload, secretKey, { expiresIn: '3h' }); // Example: Token expires in 1 hour
 }
 
 

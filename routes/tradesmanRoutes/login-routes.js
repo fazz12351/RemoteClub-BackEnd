@@ -18,13 +18,13 @@ app.get("/test", verifyToken, async (req, res) => {
 
 app.post("/register_Tradesman", async (req, res) => {
     try {
-        let { firstname, lastname, password, email } = req.body;
+        let { firstname, lastname, password, email, telephone } = req.body;
 
-        if (firstname && lastname && password && email) {
+        if (firstname && lastname && password && email && telephone) {
             const userExists = await EmployeeModel.exists({ email });
             if (!userExists) {
                 const hashedPassword = await hashPassword(password);
-                await registerEmployee(firstname, lastname, hashedPassword, email);
+                await registerEmployee(firstname, lastname, hashedPassword, email, telephone);
                 return res.status(200).json({ response: "User successfully added" });
             } else {
                 return res.status(409).json({ response: "User already exists with that email" });
@@ -60,7 +60,7 @@ app.post("/login_Tradesman", async (req, res) => {
             return res.status(401).json({ response: "User password is incorrect" });
         }
 
-        const userPayload = { email: user.email, id: user.id /* Add other relevant claims */ };
+        const userPayload = { email: user.email, id: user.id, telephone: user.telephone /* Add other relevant claims */ };
         const token = generateToken(userPayload);
 
         return res.status(200).json({ token, response: "User successfully logged in" });

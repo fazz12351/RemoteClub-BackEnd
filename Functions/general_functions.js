@@ -8,13 +8,14 @@ require('dotenv').config();
 const { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 
-async function registerEmployee(firstname, lastname, password, email) {
+async function registerEmployee(firstname, lastname, password, email, telephone) {
     try {
         const newEmployee = new EmployeeModel({
             firstname: firstname,
             lastname: lastname,
             password: password,
             email: email,
+            telephone: telephone,
             available: false,
             bookings: []
 
