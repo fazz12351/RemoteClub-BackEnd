@@ -56,7 +56,8 @@ app.post("/openJob/:job_id", verifyToken, async (req, res) => {
         if (!updatedTradesman) {
             return res.status(404).json({ response: "Tradesman not found" });
         }
-        sendMessage(req.user.telephone, "TradesmansWorld: Job has been added, Please look at your bookmarks for job information")
+
+        sendMessage(req.user.telephone, "TradesmansWorld: Job Booked Succesfully")
         await BookingModel.deleteOne({ _id: jobId })
         return res.status(200).json({ response: "Job added to Booking" });
     } catch (err) {
@@ -108,7 +109,7 @@ app.delete("/openJob/:job_id", verifyToken, async (req, res) => {
                 jobdescription: jobdescription
             })
             newBooking.save()
-            sendMessage(req.user.telephone, "TradesmansWorld: Job has been removed")
+            sendMessage(req.user.telephone, "TradesmansWorld: Job has been removed succesfully")
             return res.status(200).json({ response: "Job removed from tradesman booking and added back to openJobs" });
 
         })

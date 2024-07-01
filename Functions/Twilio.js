@@ -13,22 +13,20 @@ const formatPhoneNumber = (phoneNumber, countryCode) => {
     return `+${countryCode}${cleaned}`;
 };
 
-async function sendMessage(toNumber, messege) {
+async function sendMessage(toNumber, body) {
     try {
         toNumber = formatPhoneNumber(toNumber, "44")
-        // Example: Send an SMS
-        await TwilioClient.messages.create({
-            body: messege,
-            to: toNumber,  // Replace with your phone number
-            from: '+1 949 407 5466' // Replace with your Twilio number
-        })
-
+        await TwilioClient.messages
+            .create({
+                body: body,
+                from: process.env.FROMTWILONUMBER,
+                to: toNumber
+            })
     }
     catch (err) {
         console.log(err)
     }
 
 }
-
 
 module.exports = sendMessage

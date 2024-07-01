@@ -9,7 +9,9 @@ const accountSid = process.env.ACCOUNTSID; // Replace with your Account SID from
 const authToken = process.env.AUTHTOKENTWILIO   // Replace with your Auth Token from www.twilio.com/console
 
 // Initialize the Twilio client
-const TwilioClient = new Twilio(process.env.ACCOUNTSID, process.env.AUTHTOKENTWILIO);
+// const TwilioClient = new Twilio(process.env.ACCOUNTSID, process.env.AUTHTOKENTWILIO);
+
+const TwilioClient = require('twilio')(process.env.ACCOUNTSID, process.env.AUTHTOKENTWILIO);
 
 
 const s3Client = new S3Client({
