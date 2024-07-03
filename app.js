@@ -13,6 +13,8 @@ app.use(express.json());
 app.use(express.urlencoded({
     extended: true
 }));
+
+const CustomerService = require("./routes/customerRoutes/customerService-routes")
 const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
 const CustomerLogin = require("./routes/customerRoutes/login-routes")
 
@@ -25,6 +27,7 @@ app.use(cors())
 
 app.use("/CustomerBooking", CustomerBookingRouter)
 app.use("/CustomerLogin", CustomerLogin)
+app.use("/CustomerService", CustomerService)
 
 app.use("/TradesmanLogin", TradesmanLoginRouter)
 app.use("/TradesmaPosts", TradesmanPostRouter)
