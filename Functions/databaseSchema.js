@@ -59,6 +59,12 @@ const EmployeeSchema = new mongoose.Schema({
     posts: [PostsSchema]
 });
 
+const VerificationSchema = new mongoose.Schema({
+    userId: String,
+    code: String
+})
+
+const VerificationModel = new mongoose.model("verification", VerificationSchema)
 
 const CustomerModel = new mongoose.model("customer", CustomerSchema)
 
@@ -68,4 +74,4 @@ const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
 
 const PostsModel = new mongoose.model("posts", PostsSchema);
 
-module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel }
+module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel, VerificationModel }

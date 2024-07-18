@@ -1,5 +1,4 @@
 const { TwilioClient } = require("../Functions/configuration")
-const { formatPhoneNumber } = require("../Functions/general_functions")
 
 async function sendMessage(toNumber, body) {
     try {

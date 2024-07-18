@@ -6,7 +6,9 @@ const jwt = require("jsonwebtoken")
 const registerTradesman = require("../../Functions/general_functions");
 const { hashPassword, registerEmployee, EmployeeModel, comparePasswords, formatPhoneNumber } = require("../../Functions/general_functions");
 const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation")
-
+const { VerificationModel } = require("../../Functions/databaseSchema")
+const { v4: uuidv4 } = require('uuid');
+const sendMessage = require("../../Functions/Twilio");
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
 
@@ -82,6 +84,56 @@ app.post("/login_Tradesman", async (req, res) => {
         return res.status(500).json({ response: "Internal Server Error" });
     }
 });
+
+app.post("/send_verificationCode", verifyToken, async (req, res) => {
+    try {
+        const randomCode = uuidv4().toString()
+        const code = randomCode.slice(0, 8)
+
+        const checkIfCodeExists = await VerificationModel.find({ userId: req.user.id })
+
+        if (checkIfCodeExists.length > 0) {
+            return res.status(400).json({ Error: "Code created already  for this number" })
+        }
+
+        await sendMessage(req.user.telephone, `Your Secret Code is ${code}`)
+        const newCode = new VerificationModel({
+            userId: req.user.id,
+            code: code
+        })
+        await newCode.save()
+        return res.status(200).json({ responce: "code created sucesfully" })
+
+    }
+    catch (err) {
+        return res.status(400).json({ Error: err })
+    }
+})
+
+//verify a users telephone
+app.post("/check_verificationCode", verifyToken, async (req, res) => {
+    try {
+        const { code } = req.body;
+        const userId = req.user.id;
+
+        // Check if there is a verification entry for the given code and userId
+        const verificationEntry = await VerificationModel.findOne({ code: code });
+
+        if (verificationEntry) {
+            // Verification entry found
+            await VerificationModel.deleteOne({ _id: verificationEntry._id });
+            return res.status(200).json({ response: "User verified" });
+        } else {
+            // No verification entry found
+            await VerificationModel.deleteMany({ userId: userId });
+            return res.status(400).json({ error: "Verification code not valid or expired" });
+        }
+    } catch (err) {
+        console.error("Error checking verification code:", err);
+        return res.status(500).json({ error: "Internal Server Error" });
+    }
+});
+
 
 
 app.post("/Online/:isOnline", verifyToken, async (req, res) => {
