@@ -7,6 +7,7 @@ const app = express()
 
 app.get("/profile", verifyToken, async (req, res) => {
     try {
+        console.log(req)
         const profileInfo = await EmployeeModel.findOne({ _id: req.user.id })
         const { firstname, lastname, email, posts, booking } = profileInfo
         return res.status(200).json({ responce: { firstname: firstname, lastname: lastname, email: email, posts: posts, bookings: booking } })

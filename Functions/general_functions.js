@@ -120,13 +120,28 @@ const getCoordinates = async (address) => {
 
     }
 };
+const formatPhoneNumber = (phoneNumber, countryCode) => {
+    if (phoneNumber.length != 11) {
+        return false
+    }
+    // Remove any non-numeric characters
+    let cleaned = phoneNumber.replace(/\D/g, '');
+
+    // Remove leading zeros
+    if (cleaned.startsWith('0')) {
+        cleaned = cleaned.substring(1);
+    }
+
+    // Add the country code
+    return `+${countryCode}${cleaned}`;
+};
 
 
 
 
 
 
-module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel, s3Retrieve, s3Upload, s3Delete, getCoordinates }
+module.exports = { hashPassword, comparePasswords, registerEmployee, EmployeeModel, s3Retrieve, s3Upload, s3Delete, getCoordinates, formatPhoneNumber }
 
 
 

@@ -4,7 +4,7 @@ const mongodb = require("mongodb");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken")
 const registerTradesman = require("../../Functions/general_functions");
-const { hashPassword, registerEmployee, EmployeeModel, comparePasswords } = require("../../Functions/general_functions");
+const { hashPassword, registerEmployee, EmployeeModel, comparePasswords, formatPhoneNumber } = require("../../Functions/general_functions");
 const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation")
 
 // This middleware is necessary to parse the request body in JSON format
@@ -16,27 +16,40 @@ app.get("/test", verifyToken, async (req, res) => {
 
 });
 
-app.post("/register_Tradesman", async (req, res) => {
-    try {
-        let { firstname, lastname, password, email, telephone } = req.body;
 
-        if (firstname && lastname && password && email && telephone) {
-            const userExists = await EmployeeModel.exists({ email });
-            if (!userExists) {
-                const hashedPassword = await hashPassword(password);
-                await registerEmployee(firstname, lastname, hashedPassword, email, telephone);
-                return res.status(200).json({ response: "User successfully added" });
-            } else {
-                return res.status(409).json({ response: "User already exists with that email" });
-            }
-        } else {
-            return res.status(400).json({ response: "Not all fields were valid" });
+
+app.post("/register_Tradesman", async (req, res) => {
+    const { firstname, lastname, password, email, telephone } = req.body;
+
+    if (!firstname || !lastname || !password || !email || !telephone) {
+        return res.status(400).json({ response: "All fields are required" });
+    }
+
+    try {
+        const userExists = await EmployeeModel.exists({ email });
+
+        if (userExists) {
+            return res.status(409).json({ response: "User already exists with that email" });
         }
+
+        const hashedPassword = await hashPassword(password);
+        const formattedTelephone = formatPhoneNumber(telephone, "44");
+
+        if (!formattedTelephone) {
+            return res.status(400).json({ response: "Invalid telephone format" });
+        }
+
+        await registerEmployee(firstname, lastname, hashedPassword, email, formattedTelephone);
+        return res.status(201).json({ response: "User successfully registered" });
+
     } catch (err) {
-        console.error("Error:", err);
-        return res.status(500).json({ response: err });
+        console.error("Error during registration:", err);
+        return res.status(500).json({ response: "Internal Server Error", error: err.message });
     }
 });
+
+
+
 
 app.post("/login_Tradesman", async (req, res) => {
     try {

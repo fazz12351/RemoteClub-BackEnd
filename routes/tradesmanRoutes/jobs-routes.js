@@ -32,6 +32,7 @@ app.get("/openJobs", verifyToken, async (req, res) => {
 
 app.post("/openJob/:job_id", verifyToken, async (req, res) => {
     try {
+        console.log(req.user)
         const tradesmanId = req.user.id;
         const jobId = req.params.job_id;
 
@@ -56,7 +57,6 @@ app.post("/openJob/:job_id", verifyToken, async (req, res) => {
         if (!updatedTradesman) {
             return res.status(404).json({ response: "Tradesman not found" });
         }
-
         sendMessage(req.user.telephone, "TradesmansWorld: Job Booked Succesfully")
         await BookingModel.deleteOne({ _id: jobId })
         return res.status(200).json({ response: "Job added to Booking" });
