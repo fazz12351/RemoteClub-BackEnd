@@ -1,10 +1,11 @@
 const express = require("express");
 const app = express();
-const { EmployeeModel, getCoordinates } = require("../../Functions/general_functions");
+const { EmployeeModel, getCoordinates, s3Upload } = require("../../Functions/general_functions");
 const { CustomerModel, BookingModel } = require("../../Functions/databaseSchema");
 const bodyParser = require("body-parser");
 const { verifyToken } = require("../../Functions/middleware/authorisation");
-
+const multer = require("multer");
+const upload = multer();
 app.use(bodyParser.urlencoded({
     extended: true
 }))
@@ -13,6 +14,8 @@ app.use(bodyParser.urlencoded({
 const {
     ObjectId
 } = require('mongoose').Types;
+app.use(express.json());
+
 
 app.post("/bookJob/:tradesmanId", verifyToken, async (req, res) => {
 
@@ -75,19 +78,21 @@ app.post("/bookJob/:tradesmanId", verifyToken, async (req, res) => {
 });
 
 
-app.post("/postJob", verifyToken, async (req, res) => {
+app.post("/postJob", upload.any(), async (req, res) => {
     try {
-        const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
-
-
+        // const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
+        const currentCustomerId = "65df30fee568b69afdff0226"
         const exists = await CustomerModel.findById(currentCustomerId);
+        const date = new Date();
+        const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        const time = createdAt.split(" ")[0]
+        let videoName = req.files ? req.files[0].originalname : null
 
         if (!exists) {
             return res.status(404).json({
                 responce: "Customer id doesnt exist"
             })
         }
-
         const {
             jobtitle,
             jobdescription,
@@ -98,6 +103,7 @@ app.post("/postJob", verifyToken, async (req, res) => {
             lastname,
             telephone,
         } = exists
+
         if (!jobtitle || !jobdescription) {
             return res.status(400).json({
                 responce: "missing fields"
@@ -111,15 +117,28 @@ app.post("/postJob", verifyToken, async (req, res) => {
             });
         }
 
+        if (videoName) {
+            try {
+                videoName = await s3Upload(req.files[0], time, currentCustomerId);
+                console.log(videoName)
+            } catch (err) {
+                console.log(err)
+                return res.status(400).json({ Error: err })
+            }
+        }
 
         // Create a new booking instance. //Add picttueres for video facility.
         const newBooking = new BookingModel({
-            firstname,
-            lastname,
-            telephone,
-            address,
-            jobtitle,
-            jobdescription,
+            firstname: firstname,
+            lastname: lastname,
+            telephone: telephone,
+            address: address,
+            jobtitle: jobtitle,
+            jobdescription: jobdescription,
+            video_name: {
+                userId: currentCustomerId,
+                videoName: videoName
+            }
         });
 
         // Save the new booking to the database

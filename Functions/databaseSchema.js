@@ -18,6 +18,12 @@ db.once('open', () => {
     console.log('Connected to MongoDB');
 });
 
+
+const CustomerPostSchema = new mongoose.Schema({
+    userId: String,
+    videoName: String
+})
+
 const PostsSchema = new mongoose.Schema({
     title: String,
     createdAt: String,
@@ -33,7 +39,7 @@ const BookingSchema = new mongoose.Schema({
     address: String,
     jobtitle: String,
     jobdescription: String,
-    video_name: PostsSchema
+    video_name: CustomerPostSchema
 })
 
 const CustomerSchema = new mongoose.Schema({
@@ -59,10 +65,14 @@ const EmployeeSchema = new mongoose.Schema({
     posts: [PostsSchema]
 });
 
+
+
 const VerificationSchema = new mongoose.Schema({
     userId: String,
     code: String
 })
+
+const CustomerPostModel = new mongoose.model("CustomerPosts", CustomerSchema)
 
 const VerificationModel = new mongoose.model("verification", VerificationSchema)
 
@@ -74,4 +84,4 @@ const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
 
 const PostsModel = new mongoose.model("posts", PostsSchema);
 
-module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel, VerificationModel }
+module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel, VerificationModel, CustomerPostModel }

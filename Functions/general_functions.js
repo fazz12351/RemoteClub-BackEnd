@@ -65,7 +65,7 @@ const s3Upload = async (file, currentTime, userId) => {
     const s3PutCommand = new PutObjectCommand(params);
     await s3Client.send(s3PutCommand);
 
-    return file.originalname;
+    return params.Key;
 };
 
 const s3Retrieve = async (fileName) => {
