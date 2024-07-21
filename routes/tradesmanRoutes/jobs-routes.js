@@ -11,14 +11,53 @@ const {
     EmployeeModel
 } = require("../../Functions/databaseSchema");
 const sendMessage = require("../../Functions/Twilio");
+const { s3Retrieve } = require("../../Functions/general_functions");
 
 app.use(bodyParser.urlencoded({
     extended: true
 }));
 
+
+app.get("/:jobId", async (req, res) => {
+    const jobId = req.params.jobId;
+
+    // Validate jobId length
+    if (jobId.length !== 24) {
+        return res.status(400).json({ error: "Job ID must be 24 characters long" });
+    }
+
+    try {
+        // Find the job by ID
+        const job = await BookingModel.findOne({ _id: jobId });
+
+        // Check if the job exists
+        if (job) {
+            // If video_name exists, retrieve the video name from S3
+            if (job.video_name && job.video_name.videoName) {
+                job.video_name.videoName = await s3Retrieve(job.video_name.videoName);
+            }
+            return res.status(200).json({ response: job });
+        } else {
+            return res.status(404).json({ response: "Job doesn't exist" });
+        }
+    } catch (error) {
+        // Handle any errors that occur during the async operations
+        return res.status(500).json({ error: "An error occurred while retrieving the job" });
+    }
+});
+
+
 app.get("/openJobs", verifyToken, async (req, res) => {
     try {
-        const availableJobs = await BookingModel.find({});
+        let availableJobs = await BookingModel.find({});
+
+        for (let i = 0; i < availableJobs.length; i++) {
+            if (availableJobs[i].video_name != null) {
+                availableJobs[i].video_name.videoName = await s3Retrieve(availableJobs[i].video_name.videoName)
+                console.log(availableJobs[i])
+
+            }
+        }
         res.status(200).json({
             response: availableJobs
         });

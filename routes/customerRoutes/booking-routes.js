@@ -78,7 +78,7 @@ app.post("/bookJob/:tradesmanId", verifyToken, async (req, res) => {
 });
 
 
-app.post("/postJob", upload.any(), async (req, res) => {
+app.post("/postJob", verifyToken, upload.any(), async (req, res) => {
     try {
         // const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
         const currentCustomerId = "65df30fee568b69afdff0226"
