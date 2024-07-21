@@ -18,7 +18,7 @@ app.use(bodyParser.urlencoded({
 }));
 
 
-app.get("/:jobId", async (req, res) => {
+app.get("/jobdetail/:jobId", async (req, res) => {
     const jobId = req.params.jobId;
 
     // Validate jobId length
