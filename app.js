@@ -23,6 +23,8 @@ const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
 const TradesmanJob = require("./routes/tradesmanRoutes/jobs-routes")
 const TradesmansProfile = require("./routes/tradesmanRoutes/profile-routes")
 
+const Video = require("./routes/generalRoute/video")
+
 app.use(cors())
 
 app.use("/CustomerBooking", CustomerBookingRouter)
@@ -33,6 +35,8 @@ app.use("/TradesmanLogin", TradesmanLoginRouter)
 app.use("/TradesmaPosts", TradesmanPostRouter)
 app.use("/TradesmanJob", TradesmanJob)
 app.use("/TradesmanProfile", TradesmansProfile)
+
+app.use("/video", Video)
 
 
 const PORT = 3000;
