@@ -97,7 +97,7 @@ app.post("/openJob/:job_id", verifyToken, async (req, res) => {
             return res.status(404).json({ response: "Tradesman not found" });
         }
         sendMessage(req.user.telephone, "TradesmansWorld: Job Booked Succesfully")
-        await BookingModel.deleteOne({ _id: jobId })
+        // await BookingModel.deleteOne({ _id: jobId })
         return res.status(200).json({ response: "Job added to Booking" });
     } catch (err) {
         console.error(err);
