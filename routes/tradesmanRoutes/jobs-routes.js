@@ -50,14 +50,6 @@ app.get("/jobdetail/:jobId", async (req, res) => {
 app.get("/openJobs", verifyToken, async (req, res) => {
     try {
         let availableJobs = await BookingModel.find({});
-
-        for (let i = 0; i < availableJobs.length; i++) {
-            if (availableJobs[i].video_name != null) {
-                availableJobs[i].video_name.videoName = await s3Retrieve(availableJobs[i].video_name.videoName)
-                console.log(availableJobs[i])
-
-            }
-        }
         res.status(200).json({
             response: availableJobs
         });

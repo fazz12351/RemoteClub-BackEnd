@@ -23,7 +23,7 @@ const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
 const TradesmanJob = require("./routes/tradesmanRoutes/jobs-routes")
 const TradesmansProfile = require("./routes/tradesmanRoutes/profile-routes")
 
-const Video = require("./routes/generalRoute/video")
+const Video = require("./routes/generalRoutes/video")
 
 app.use(cors())
 

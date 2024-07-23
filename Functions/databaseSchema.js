@@ -19,10 +19,6 @@ db.once('open', () => {
 });
 
 
-const CustomerPostSchema = new mongoose.Schema({
-    userId: String,
-    videoName: String
-})
 
 const PostsSchema = new mongoose.Schema({
     title: String,
@@ -39,7 +35,7 @@ const BookingSchema = new mongoose.Schema({
     address: String,
     jobtitle: String,
     jobdescription: String,
-    video_name: CustomerPostSchema
+    video_name: String
 })
 
 const CustomerSchema = new mongoose.Schema({
@@ -72,7 +68,6 @@ const VerificationSchema = new mongoose.Schema({
     code: String
 })
 
-const CustomerPostModel = new mongoose.model("CustomerPosts", CustomerSchema)
 
 const VerificationModel = new mongoose.model("verification", VerificationSchema)
 
@@ -84,4 +79,4 @@ const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
 
 const PostsModel = new mongoose.model("posts", PostsSchema);
 
-module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel, VerificationModel, CustomerPostModel }
+module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel, VerificationModel }

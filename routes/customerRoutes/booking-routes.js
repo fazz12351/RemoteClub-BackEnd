@@ -78,7 +78,7 @@ app.post("/bookJob/:tradesmanId", verifyToken, async (req, res) => {
 });
 
 
-app.post("/postJob", verifyToken, upload.any(), async (req, res) => {
+app.post("/postJob", upload.any(), async (req, res) => {
     try {
         // const currentCustomerId = new mongoose.Types.ObjectId(req.user.id);
         const currentCustomerId = "65df30fee568b69afdff0226"
@@ -86,7 +86,7 @@ app.post("/postJob", verifyToken, upload.any(), async (req, res) => {
         const date = new Date();
         const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
         const time = createdAt.split(" ")[0]
-        let videoName = req.files ? req.files[0].originalname : null
+        let video_name = req.files ? req.files[0].originalname : null
 
         if (!exists) {
             return res.status(404).json({
@@ -117,7 +117,7 @@ app.post("/postJob", verifyToken, upload.any(), async (req, res) => {
             });
         }
 
-        if (videoName) {
+        if (video_name) {
             try {
                 videoName = await s3Upload(req.files[0], time, currentCustomerId);
                 console.log(videoName)
@@ -135,10 +135,7 @@ app.post("/postJob", verifyToken, upload.any(), async (req, res) => {
             address: address,
             jobtitle: jobtitle,
             jobdescription: jobdescription,
-            video_name: {
-                userId: currentCustomerId,
-                videoName: videoName
-            }
+            video_name: videoName
         });
 
         // Save the new booking to the database
