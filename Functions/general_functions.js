@@ -17,6 +17,7 @@ async function registerEmployee(firstname, lastname, password, email, telephone)
             email: email,
             telephone: telephone,
             available: false,
+            profile_picture: null,
             bookings: []
 
         });

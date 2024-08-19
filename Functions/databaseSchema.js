@@ -57,6 +57,7 @@ const EmployeeSchema = new mongoose.Schema({
     email: String,
     available: Boolean,
     telephone: String,
+    profile_picture: String,
     booking: [BookingSchema],
     posts: [PostsSchema]
 });
