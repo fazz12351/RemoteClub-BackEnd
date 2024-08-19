@@ -32,7 +32,7 @@ app.use("/CustomerLogin", CustomerLogin)
 app.use("/CustomerService", CustomerService)
 
 app.use("/TradesmanLogin", TradesmanLoginRouter)
-app.use("/TradesmaPosts", TradesmanPostRouter)
+app.use("/TradesmanPosts", TradesmanPostRouter)
 app.use("/TradesmanJob", TradesmanJob)
 app.use("/TradesmanProfile", TradesmansProfile)
 

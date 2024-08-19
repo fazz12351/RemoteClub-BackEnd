@@ -18,9 +18,7 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
         const date = new Date();
         const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
         const time = createdAt.split(" ")[0]
-        // if (!title || title.length < 1 || !createdAt || createdAt.length < 1) {
-        //     return res.status(400).json({ response: "Ensure to add title and the date created" });
-        // }
+
         const TradesmanId = req.user.id
 
         const exists = await EmployeeModel.findById(TradesmanId);
@@ -34,26 +32,40 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
             return res.status(400).json({ response: "No files uploaded" });
         }
 
-        // Save post to database
-        await EmployeeModel.findByIdAndUpdate(TradesmanId, {
-            $push: {
-                posts: {
-                    title,
-                    createdAt,
-                    videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
-                    TradesmanId
+        const session = await mongoose.startSession()
+        try {
+            session.startTransaction();
+            // Save post to database
+            await EmployeeModel.findByIdAndUpdate(TradesmanId, {
+                $push: {
+                    posts: {
+                        title,
+                        createdAt,
+                        videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
+                        TradesmanId
+                    }
                 }
-            }
-        });
-        const newPost = new PostsModel({
-            title: title,
-            createdAt: createdAt,
-            videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
-            tradesmansId: `${TradesmanId}`
+            });
+            const newPost = new PostsModel({
+                title: title,
+                createdAt: createdAt,
+                videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
+                tradesmansId: `${TradesmanId}`
 
-        })
-        await newPost.save()
-        await s3Upload(req.files[0], time, TradesmanId);
+            })
+            await newPost.save()
+            await s3Upload(req.files[0], time, TradesmanId);
+            await session.commitTransaction();
+
+        }
+        catch (err) {
+            await session.abortTransaction();
+            return res.status(400).json({ "Error": err })
+        }
+
+        finally {
+            session.endSession();
+        }
 
         res.status(200).json({ response: "Successfully posted" });
     } catch (err) {
