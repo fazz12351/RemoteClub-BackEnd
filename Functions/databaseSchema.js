@@ -70,14 +70,17 @@ const VerificationSchema = new mongoose.Schema({
 })
 
 
-const VerificationModel = new mongoose.model("verification", VerificationSchema)
 
-const CustomerModel = new mongoose.model("customer", CustomerSchema)
+//Stores customer Information
+const CustomerModel = new mongoose.model("Customers", CustomerSchema)
 
-const BookingModel = new mongoose.model("Bookings", BookingSchema)
+//Stores information About a Job Posted
+const BookingModel = new mongoose.model("OpenJobs", BookingSchema)
 
-const EmployeeModel = mongoose.model('Employee', EmployeeSchema);
+//Stores information About Employess
+const EmployeeModel = mongoose.model('Employees', EmployeeSchema);
 
-const PostsModel = new mongoose.model("posts", PostsSchema);
+//BluePrint of how a post is structured. This also stores posts by Tradesman
+const PostsModel = new mongoose.model("Posts", PostsSchema);
 
-module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel, VerificationModel }
+module.exports = { BookingModel, EmployeeModel, PostsModel, CustomerModel }
