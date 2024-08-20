@@ -18,6 +18,8 @@ const CustomerService = require("./routes/customerRoutes/customerService-routes"
 const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
 const CustomerLogin = require("./routes/customerRoutes/login-routes")
 
+const GeneralProfile = require("./routes/generalRoutes/profile")
+
 const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
 const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
 const TradesmanJob = require("./routes/tradesmanRoutes/jobs-routes")
@@ -36,7 +38,9 @@ app.use("/TradesmanPosts", TradesmanPostRouter)
 app.use("/TradesmanJob", TradesmanJob)
 app.use("/TradesmanProfile", TradesmansProfile)
 
-app.use("/video", Video)
+
+app.use("/General/Profile", GeneralProfile)
+app.use("/Video", Video)
 
 
 const PORT = 3000;
