@@ -119,36 +119,63 @@ app.get("/allPosts", verifyToken, async (req, res) => {
 })
 
 
-app.delete("/delete/:postId", verifyToken, async (req, res) => {
-    try {
-        const post_Id = req.params.postId
-        const tradesmansId = req.user.id
 
-        const exists = await EmployeeModel.findById(tradesmansId)
+app.delete("/delete/:postId", verifyToken, async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const post_Id = req.params.postId;
+        const tradesmansId = req.user.id;
+        const exists = await EmployeeModel.findById(tradesmansId).session(session);
+
         if (exists) {
-            let posts = exists.posts
+            let posts = exists.posts;
+            let postFound = false;
+
             for (let i = 0; i < posts.length; i++) {
                 if (posts[i].id == post_Id) {
-                    await s3Delete(posts[i].videoName)
-                    posts.splice(i, 1)
-                    exists.posts = posts
-                    exists.save()
-                    return res.status(200).json({ responce: "Post deleted succesfully" })
+                    postFound = true;
+                    const videoName = posts[i].videoName;
 
+                    // Delete the post from PostsModel
+                    await PostsModel.findOneAndDelete({ videoName: videoName }).session(session);
+
+                    // Delete the video from S3
+                    await s3Delete(posts[i].videoName);
+
+                    // Remove the post from the EmployeeModel's posts array
+                    posts.splice(i, 1);
+                    exists.posts = posts;
+
+                    // Save the updated EmployeeModel
+                    await exists.save({ session });
+
+                    // Commit the transaction
+                    await session.commitTransaction();
+                    session.endSession();
+
+                    return res.status(200).json({ response: "Post deleted successfully" });
                 }
             }
-            return res.status(204).json({ responce: "post not found" })
 
+            if (!postFound) {
+                await session.abortTransaction();
+                session.endSession();
+                return res.status(204).json({ response: "Post not found" });
+            }
+        } else {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(204).json({ Error: "Tradesman not found" });
         }
-        else {
-            return res.status(204).json({ Error: "Tradesmans not found" })
-        }
-
+    } catch (err) {
+        await session.abortTransaction();
+        session.endSession();
+        return res.status(400).json({ Error: err.message });
     }
-    catch (err) {
+});
 
-        return res.status(400).json({ Error: err })
-    }
-})
+
 
 module.exports = app;
