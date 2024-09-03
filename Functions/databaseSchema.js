@@ -24,7 +24,7 @@ const PostsSchema = new mongoose.Schema({
     title: String,
     createdAt: String,
     videoName: String,
-    tradesmansId: String,
+    Id: String,
 })
 
 
