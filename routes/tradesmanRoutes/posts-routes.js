@@ -42,7 +42,7 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
                         title,
                         createdAt,
                         videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
-                        TradesmanId
+                        Id: TradesmanId
                     }
                 }
             });
@@ -50,7 +50,7 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
                 title: title,
                 createdAt: createdAt,
                 videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
-                tradesmansId: `${TradesmanId}`
+                Id: TradesmanId
 
             })
             await newPost.save()
