@@ -19,6 +19,7 @@ const CustomerBookingRouter = require("./routes/customerRoutes/booking-routes")
 const CustomerLogin = require("./routes/customerRoutes/login-routes")
 
 const GeneralProfile = require("./routes/generalRoutes/profile")
+const GeneralPosts = require("./routes/generalRoutes/posts")
 
 const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
 const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
@@ -40,6 +41,7 @@ app.use("/TradesmanProfile", TradesmansProfile)
 
 
 app.use("/General/Profile", GeneralProfile)
+app.use("/GeneralPosts", GeneralPosts)
 app.use("/Video", Video)
 
 
