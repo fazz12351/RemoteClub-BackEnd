@@ -55,7 +55,6 @@ app.post("/register_Tradesman", async (req, res) => {
 
 app.post("/login_Tradesman", async (req, res) => {
     try {
-        console.log("being called")
         const { email, password } = req.body;
 
         if (!email || !password) {
@@ -78,7 +77,7 @@ app.post("/login_Tradesman", async (req, res) => {
         const userPayload = { email: user.email, id: user.id, telephone: user.telephone /* Add other relevant claims */ };
         const token = generateToken(userPayload);
 
-        return res.status(200).json({ token, response: "User successfully logged in" });
+        return res.status(200).json({ "token": token, "Id": user.id, response: "User successfully logged in" });
     } catch (error) {
         console.error("Error:", error);
         return res.status(500).json({ response: "Internal Server Error" });
