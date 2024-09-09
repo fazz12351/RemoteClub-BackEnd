@@ -8,6 +8,7 @@ const { generateToken, verifyToken } = require("../../Functions/middleware/autho
 const { s3Retrieve, s3Upload, s3Delete, getCoordinates } = require("../../Functions/general_functions")
 const { SupportApp } = require("aws-sdk");
 const { dynamodb } = require("../../Functions/configuration");
+const { verify } = require("jsonwebtoken");
 
 // This middleware is necessary to parse the request body in JSON format
 app.use(express.json());
@@ -276,7 +277,7 @@ app.get("/likes/:postId", verifyToken, async (req, res) => {
     }
 });
 
-app.delete("/likes/:postId", async (req, res) => {
+app.delete("/likes/:postId", verifyToken, async (req, res) => {
     try {
         const postId = req.params.postId;
 
