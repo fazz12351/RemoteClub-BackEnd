@@ -177,7 +177,7 @@ app.delete("/delete/:postId", verifyToken, async (req, res) => {
     }
 });
 
-app.post("/like/:postId", async (req, res) => {
+app.post("/like/:postId", verifyToken, async (req, res) => {
     try {
         console.log("being called");
 
@@ -241,6 +241,39 @@ app.post("/like/:postId", async (req, res) => {
     catch (err) {
         console.error("Error:", err);
         return res.status(400).json({ Error: err.message });
+    }
+});
+
+app.get("/likes/:postId", verifyToken, async (req, res) => {
+    try {
+        const postId = req.params.postId;
+
+        // Check if the postId exists in your primary Posts collection (e.g., MongoDB)
+        const postExists = await PostsModel.findOne({ _id: postId });
+        if (!postExists) {
+            return res.status(404).json({ message: "No matching post exists" });
+        }
+
+        // Prepare DynamoDB query to fetch likes
+        const params = {
+            TableName: "Likes",
+            Key: {
+                postId: postId
+            }
+        };
+
+        // Attempt to retrieve likes for the post from DynamoDB
+        const data = await dynamodb.get(params).promise();
+
+        if (data.Item && typeof data.Item.likes !== 'undefined') {
+            return res.status(200).json({ likes: data.Item.likes });
+        } else {
+            return res.status(200).json({ likes: 0 });  // No likes found, return 0
+        }
+
+    } catch (err) {
+        console.error("Error fetching likes:", err);
+        return res.status(500).json({ error: "An error occurred while retrieving likes" });
     }
 });
 
