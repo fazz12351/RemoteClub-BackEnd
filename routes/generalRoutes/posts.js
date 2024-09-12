@@ -7,10 +7,12 @@ const upload = multer();
 const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation");
 const { s3Retrieve, s3Upload, s3Delete, getCoordinates } = require("../../Functions/general_functions");
 const { SupportApp } = require("aws-sdk");
+const { dynamodb } = require("../../Functions/configuration")
 
 // Pagination in allPosts endpoint
 app.get("/allposts", verifyToken, async (req, res) => {
     try {
+
         // Extract page and limit from query params or set defaults
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -28,7 +30,19 @@ app.get("/allposts", verifyToken, async (req, res) => {
 
         // Loop through posts to retrieve video URLs from S3
         for (let i = 0; i < allPosts.length; i++) {
-            allPosts[i].videoName = await s3Retrieve(allPosts[i].videoName);
+            const postObject = allPosts[i].toObject(); // Convert Mongoose document to plain object
+            postObject.videoName = await s3Retrieve(postObject.videoName); // Retrieve the video URL from S3
+            // Prepare DynamoDB query to fetch likes
+            const params = {
+                TableName: "Likes",
+                Key: {
+                    postId: allPosts[i].id
+                }
+            };
+            // Attempt to retrieve likes for the post from DynamoDB
+            const data = await dynamodb.get(params).promise();
+            postObject.likes = data && data.Item ? data.Item.likes : 0; // Default to 0 if no data is found
+            allPosts[i] = postObject; // Replace the original Mongoose document with the updated object
         }
 
         // Calculate total number of pages
@@ -47,5 +61,6 @@ app.get("/allposts", verifyToken, async (req, res) => {
         return res.status(400).json({ "Error": err });
     }
 });
+
 
 module.exports = app;
