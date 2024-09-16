@@ -12,7 +12,7 @@ const { dynamodb } = require("../../Functions/configuration")
 // Pagination in allPosts endpoint
 app.get("/allposts", verifyToken, async (req, res) => {
     try {
-
+        const userId = req.user.id;
         // Extract page and limit from query params or set defaults
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
@@ -30,6 +30,7 @@ app.get("/allposts", verifyToken, async (req, res) => {
 
         // Loop through posts to retrieve video URLs from S3
         for (let i = 0; i < allPosts.length; i++) {
+            let currentPostLike = false;
             const postObject = allPosts[i].toObject(); // Convert Mongoose document to plain object
             postObject.videoName = await s3Retrieve(postObject.videoName); // Retrieve the video URL from S3
             // Prepare DynamoDB query to fetch likes
@@ -42,6 +43,13 @@ app.get("/allposts", verifyToken, async (req, res) => {
             // Attempt to retrieve likes for the post from DynamoDB
             const data = await dynamodb.get(params).promise();
             postObject.likes = data && data.Item ? data.Item.likes : 0; // Default to 0 if no data is found
+            if (data.Item) {
+                const users = new Set(data.Item.users)
+                if (users.has(userId)) {
+                    currentPostLike = true;
+                }
+            }
+            postObject.liked = currentPostLike
             allPosts[i] = postObject; // Replace the original Mongoose document with the updated object
         }
 
@@ -169,6 +177,7 @@ app.get("/likes/:postId", verifyToken, async (req, res) => {
 app.delete("/likes/:postId", verifyToken, async (req, res) => {
     try {
         const postId = req.params.postId;
+        const userId = req.user.id;
 
         // Check if the postId exists in your primary Posts collection (e.g., MongoDB)
         const postExists = await PostsModel.find({ _id: postId });
@@ -188,43 +197,48 @@ app.delete("/likes/:postId", verifyToken, async (req, res) => {
         const data = await dynamodb.get(params).promise();
 
         if (!data.Item) {
-            // If no likes exist for the postId, return a message indicating no likes to decrement
             return res.status(404).json({ message: "No likes exist for this post to decrement" });
         } else {
-            const currentLikes = data.Item.likes;
+            const usersSet = new Set(data.Item.users); // Convert array to Set for faster lookup
 
-            if (currentLikes > 0) {
-                // If postId exists and likes are greater than 0, decrement the likes count
-                const updateParams = {
-                    TableName: 'Likes',
-                    Key: {
-                        postId: postId
-                    },
-                    UpdateExpression: "set #likes = #likes - :decrement",
-                    ExpressionAttributeNames: {
-                        '#likes': 'likes'  // Use ExpressionAttributeNames to avoid reserved keywords
-                    },
-                    ExpressionAttributeValues: {
-                        ':decrement': 1
-                    },
-                    ReturnValues: 'UPDATED_NEW'  // Return the updated attributes
-                };
-
-                const updatedData = await dynamodb.update(updateParams).promise();
-                console.log("Likes decremented:", updatedData);
-
-                return res.status(200).json({ message: "Post like decremented", updatedLikes: updatedData.Attributes.likes });
-            } else {
-                // If likes are already 0, return a message
-                return res.status(400).json({ message: "Likes cannot be less than 0" });
+            if (!usersSet.has(userId)) {
+                return res.status(404).json({ message: "Current User has no likes attached to this post" });
             }
+            // Remove the user from the Set
+            usersSet.delete(userId);
+            const updatedUsersArray = Array.from(usersSet);  // Convert back to array for storage
+
+            // Prepare the DynamoDB update params
+            const updateParams = {
+                TableName: 'Likes',
+                Key: {
+                    postId: postId
+                },
+                UpdateExpression: "set #users = :updatedUsers, #likes = #likes - :decrement",
+                ExpressionAttributeNames: {
+                    '#users': 'users',
+                    '#likes': 'likes'
+                },
+                ExpressionAttributeValues: {
+                    ':updatedUsers': updatedUsersArray,
+                    ':decrement': 1
+                },
+                ReturnValues: 'UPDATED_NEW'
+            };
+
+            const updatedData = await dynamodb.update(updateParams).promise();
+
+            return res.status(200).json({
+                message: "User like removed and post like decremented",
+                updatedLikes: updatedData.Attributes.likes
+            });
         }
-    }
-    catch (err) {
+    } catch (err) {
         console.error("Error:", err);
         return res.status(500).json({ Error: err.message });
     }
 });
+
 
 
 
