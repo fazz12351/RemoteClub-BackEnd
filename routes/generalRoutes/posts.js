@@ -64,8 +64,9 @@ app.get("/allposts", verifyToken, async (req, res) => {
 
 app.post("/like/:postId", verifyToken, async (req, res) => {
     try {
-
         const postId = req.params.postId;
+        const userId = req.user.id;
+
 
         // Check if the postId exists in your primary Posts collection (e.g., MongoDB)
         const postExists = await PostsModel.find({ _id: postId });
@@ -85,48 +86,52 @@ app.post("/like/:postId", verifyToken, async (req, res) => {
         const data = await dynamodb.get(params).promise();
 
         if (!data.Item) {
-            // If no item is found, initialize likes to 1
+            // If no item is found, initialize likes to 1 and add the user to the set
             const putParams = {
                 TableName: 'Likes',
                 Item: {
                     postId: postId,
-                    likes: 1
+                    likes: 1,
+                    users: [userId] // Initialize users array with the current user
                 }
             };
 
             // Insert the new postId with 1 like
             await dynamodb.put(putParams).promise();
-            console.log("New postId added with 1 like");
-
             return res.status(201).json({ message: "Post liked for the first time, likes set to 1" });
-        } else {
-            // If postId exists, increment the likes count
-            const updateParams = {
-                TableName: 'Likes',
-                Key: {
-                    postId: postId
-                },
-                UpdateExpression: "set #likes = #likes + :increment",
-                ExpressionAttributeNames: {
-                    '#likes': 'likes'  // Use ExpressionAttributeNames to avoid reserved keywords
-                },
-                ExpressionAttributeValues: {
-                    ':increment': 1
-                },
-                ReturnValues: 'UPDATED_NEW'  // Return the updated attributes
-            };
-
-            const updatedData = await dynamodb.update(updateParams).promise();
-            console.log("Likes incremented:", updatedData);
-
-            return res.status(200).json({ message: "Post liked", updatedLikes: updatedData.Attributes.likes });
         }
+        // Check if the user has already liked the post
+        if (data.Item.users.includes(userId)) {
+            return res.status(400).json({ message: "User has already liked this post" });
+        }
+
+        // If postId exists, increment the likes count and add the user to the users array
+        const updateParams = {
+            TableName: 'Likes',
+            Key: {
+                postId: postId,
+            },
+            UpdateExpression: "set #likes = #likes + :increment, #users = list_append(if_not_exists(#users, :empty_list), :new_user)",
+            ExpressionAttributeNames: {
+                '#likes': 'likes',  // Use ExpressionAttributeNames to avoid reserved keywords
+                '#users': 'users'
+            },
+            ExpressionAttributeValues: {
+                ':increment': 1,
+                ':empty_list': [],
+                ':new_user': [userId]  // Add the new user to the list of users
+            },
+            ReturnValues: 'UPDATED_NEW'  // Return the updated attributes
+        };
+
+        const updatedData = await dynamodb.update(updateParams).promise();
+        return res.status(200).json({ message: "Post liked", updatedLikes: updatedData.Attributes.likes });
     }
     catch (err) {
-        console.error("Error:", err);
         return res.status(400).json({ Error: err.message });
     }
 });
+
 
 app.get("/likes/:postId", verifyToken, async (req, res) => {
     try {
