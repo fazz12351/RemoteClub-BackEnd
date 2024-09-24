@@ -45,7 +45,6 @@ app.post("/:postId", verifyToken, async (req, res) => {
         } else {
             // If comments already exist, append the new comment
             const existingComments = data.Item.comments;
-            console.log(existingComments)
             existingComments.push({ userId: userId, comment: comment });
 
             const updateParams = {
@@ -66,6 +65,28 @@ app.post("/:postId", verifyToken, async (req, res) => {
         return res.status(400).json({ Error: err.message });
     }
 });
+
+
+app.get("/:postId", verifyToken, async (req, res) => {
+    try {
+        const postId = req.params.postId
+        const getParams = {
+            TableName: 'Comments',
+            Key: {
+                postid: postId,
+            }
+        };
+
+        // Retrieve existing comments for the post
+        let data = await dynamodb.get(getParams).promise();
+        data = data.Item
+        return res.status(200).json({ data })
+
+    }
+    catch (err) {
+
+    }
+})
 
 
 
