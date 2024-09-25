@@ -5,47 +5,56 @@ const { PostsModel } = require("../../Functions/databaseSchema");
 const { verifyToken } = require("../../Functions/middleware/authorisation");
 
 
+const { v4: uuidv4 } = require('uuid'); // Import UUID library for generating unique IDs
+
+//endpoint used to create a new comment for a specific post
 app.post("/:postId", verifyToken, async (req, res) => {
     const postId = req.params.postId;
     const userId = req.user.id;
     const { comment } = req.body;
-    try {
 
+    try {
         if (!comment) {
-            return res.status(204).json({ Error: "No comments were added, make sure to add comment in key-value pair JSON {comment:``}" })
+            return res.status(204).json({ Error: "No comments were added, make sure to add a comment in key-value pair JSON {comment:``}" });
         }
+
         // Check if the post exists
         const postExists = await PostsModel.findOne({ _id: postId });
         if (!postExists) {
-            return res.status(204).json({ Error: "Post doesn't exist with that ID" });
+            return res.status(404).json({ Error: "Post doesn't exist with that ID" });
         }
-        //query params to check if the post id exist already in Dynamodb.
+
+        // Generate a unique commentId for the new comment
+        const commentId = uuidv4();
+
+        // Query to check if the post id exists already in DynamoDB.
         const getParams = {
             TableName: 'Comments',
-            Key: {
-                postid: postId,
-            }
+            Key: { postid: postId }
         };
 
-        // Retrieve existing comments for the post
         const data = await dynamodb.get(getParams).promise();
 
         if (!data.Item) {
-            // If no comments exist, initialize the comments array with the first comment
+            // If no comments exist, initialize the comments map with the first comment
             const putParams = {
                 TableName: 'Comments',
                 Item: {
                     postid: postId,
-                    comments: [{ userId: userId, comment: comment }]
+                    comments: {
+                        [commentId]: { userId: userId, comment: comment, createdAt: new Date().toISOString() }
+                    }
                 }
             };
 
             await dynamodb.put(putParams).promise();
-            return res.status(200).json({ response: "First comment added" });
+            return res.status(200).json({ response: "First comment added", commentId });
         } else {
-            // If comments already exist, append the new comment
+            // If comments already exist, add the new comment to the map
             const existingComments = data.Item.comments;
-            existingComments.push({ userId: userId, comment: comment });
+
+            // Add the new comment with its unique commentId
+            existingComments[commentId] = { userId: userId, comment: comment, createdAt: new Date().toISOString() };
 
             const updateParams = {
                 TableName: 'Comments',
@@ -58,7 +67,7 @@ app.post("/:postId", verifyToken, async (req, res) => {
             };
 
             await dynamodb.update(updateParams).promise();
-            return res.status(200).json({ response: "Comment added successfully" });
+            return res.status(200).json({ response: "Comment added successfully", commentId });
         }
 
     } catch (err) {
@@ -67,8 +76,10 @@ app.post("/:postId", verifyToken, async (req, res) => {
 });
 
 
+//endpoint to retrieve all comments for a specifc postid
 app.get("/:postId", verifyToken, async (req, res) => {
     try {
+
         const postId = req.params.postId
         const getParams = {
             TableName: 'Comments',
@@ -76,11 +87,10 @@ app.get("/:postId", verifyToken, async (req, res) => {
                 postid: postId,
             }
         };
-
         // Retrieve existing comments for the post
         let data = await dynamodb.get(getParams).promise();
         data = data.Item
-        return res.status(200).json({ data })
+        return res.status(200).json({ responce: data.comments })
 
     }
     catch (err) {
