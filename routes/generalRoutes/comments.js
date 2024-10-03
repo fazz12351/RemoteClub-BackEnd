@@ -81,7 +81,6 @@ app.post("/:postId", verifyToken, async (req, res) => {
 app.get("/:postId", verifyToken, async (req, res) => {
     try {
         const postId = req.params.postId;
-        console.log(`Fetching comments for postId: ${postId}`);
 
         // DynamoDB parameters to retrieve comments for the post
         const getParams = {
@@ -112,11 +111,9 @@ app.get("/:postId", verifyToken, async (req, res) => {
 
             // Add author's details to the comment
             if (author) {
-                comment.firstname = author.firstname;
-                comment.surname = author.surname;
+                comment.name = `${author.firstname} ${author.lastname}`
             } else {
-                comment.firstname = "Unknown";
-                comment.surname = "User";
+                comment.name = ""
             }
             responseData.push(comment);
         }));
