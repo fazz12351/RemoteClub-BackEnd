@@ -78,7 +78,7 @@ app.post("/:postId", verifyToken, async (req, res) => {
 
 
 // Endpoint to retrieve all comments for a specific postId
-app.get("/:postId", verifyToken, async (req, res) => {
+app.get("/:postId", async (req, res) => {
     try {
         const postId = req.params.postId;
 
@@ -125,6 +125,75 @@ app.get("/:postId", verifyToken, async (req, res) => {
         return res.status(500).json({ message: 'An error occurred while retrieving comments.' });
     }
 });
+
+
+app.delete("/:postId/:commentId", async (req, res) => {
+    const postId = req.params.postId;
+    const commentId = req.params.commentId;
+
+    try {
+        // Check if the post exists
+        const postExist = await PostsModel.findOne({ _id: postId });
+        if (!postExist) {
+            return res.status(404).json({ error: "Post doesn't exist" });
+        }
+
+        // Get the current comments for the post
+        const getParams = {
+            TableName: 'Comments',
+            Key: {
+                postid: postId
+            }
+        };
+
+        const commentData = await dynamodb.get(getParams).promise();
+
+        // Check if the post has comments
+        if (!commentData.Item || !commentData.Item.comments) {
+            return res.status(404).json({ error: "No comments found for this post" });
+        }
+
+        // Filter out the comment to be deleted
+        const updatedComments = []
+        const keys = Object.keys(commentData.Item.comments)
+        // console.log(commentData.Item.comments["37280ecb-9011-4a21-bcd8-36510dc44168"])
+        for (let i = 0; i < keys.length; i++) {
+            if (keys[i] != commentId) {
+                updatedComments.push(commentData.Item.comments[keys[i]])
+            }
+        }
+
+
+
+        // Update the comments in the DynamoDB table
+        const updateParams = {
+            TableName: 'Comments',
+            Key: {
+                postid: postId
+            },
+            UpdateExpression: 'SET comments = :updatedComments',
+            ExpressionAttributeValues: {
+                ':updatedComments': updatedComments
+            },
+            ReturnValues: 'UPDATED_NEW' // Optional: Returns the updated item
+        };
+
+        const result = await dynamodb.update(updateParams).promise();
+
+        // Check if the comment was actually removed
+        if (result.Attributes.comments.length === commentData.Item.comments.length) {
+            return res.status(404).json({ error: "Comment not found" });
+        }
+
+        // Return a success response
+        res.status(200).json({ message: "Comment deleted successfully", updatedComments: result.Attributes.comments });
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ error: "An error occurred while deleting the comment" });
+    }
+});
+
 
 
 
