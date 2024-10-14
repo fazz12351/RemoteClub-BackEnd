@@ -140,7 +140,7 @@ app.post("/like/:postId", verifyToken, async (req, res) => {
     }
 });
 
-
+//Endpoint used to return total number of likes for a given post
 app.get("/likes/:postId", verifyToken, async (req, res) => {
     try {
         const postId = req.params.postId;
@@ -174,6 +174,7 @@ app.get("/likes/:postId", verifyToken, async (req, res) => {
     }
 });
 
+//Endpoint used to remove likes for a given post
 app.delete("/likes/:postId", verifyToken, async (req, res) => {
     try {
         const postId = req.params.postId;
@@ -196,11 +197,11 @@ app.delete("/likes/:postId", verifyToken, async (req, res) => {
         // Check if postId exists in DynamoDB Likes table
         const data = await dynamodb.get(params).promise();
 
+        //if the data doesnt have a key called Item, the likes doesnt exist
         if (!data.Item) {
             return res.status(404).json({ message: "No likes exist for this post to decrement" });
         } else {
             const usersSet = new Set(data.Item.users); // Convert array to Set for faster lookup
-
             if (!usersSet.has(userId)) {
                 return res.status(404).json({ message: "Current User has no likes attached to this post" });
             }
@@ -214,23 +215,24 @@ app.delete("/likes/:postId", verifyToken, async (req, res) => {
                 Key: {
                     postId: postId
                 },
-                UpdateExpression: "set #users = :updatedUsers, #likes = #likes - :decrement",
+                UpdateExpression: "set #users = :updatedUsers, #likes = :updatedLikes",
                 ExpressionAttributeNames: {
                     '#users': 'users',
                     '#likes': 'likes'
                 },
                 ExpressionAttributeValues: {
                     ':updatedUsers': updatedUsersArray,
-                    ':decrement': 1
+                    ':updatedLikes': updatedUsersArray.length // Set likes to the length of updatedUsersArray
                 },
                 ReturnValues: 'UPDATED_NEW'
             };
 
+            // Execute the update operation
             const updatedData = await dynamodb.update(updateParams).promise();
 
             return res.status(200).json({
-                message: "User like removed and post like decremented",
-                updatedLikes: updatedData.Attributes.likes
+                message: "User like removed and post likes updated",
+                updatedLikes: updatedData.Attributes.likes // Returning the updated likes count
             });
         }
     } catch (err) {
@@ -238,7 +240,6 @@ app.delete("/likes/:postId", verifyToken, async (req, res) => {
         return res.status(500).json({ Error: err.message });
     }
 });
-
 
 
 
