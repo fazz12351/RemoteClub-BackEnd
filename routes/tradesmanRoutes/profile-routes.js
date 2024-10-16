@@ -26,9 +26,9 @@ app.get("/profile", verifyToken, async (req, res) => {
     }
 })
 
-app.put("/profile_picture", upload.any(), async (req, res) => {
+app.put("/profile_picture", verifyToken, upload.any(), async (req, res) => {
     try {
-
+        console.log("im being called")
         const date = new Date();
         const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
         const time = createdAt.split(" ")[0]
