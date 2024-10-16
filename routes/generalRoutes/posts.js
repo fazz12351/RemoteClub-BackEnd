@@ -1,7 +1,7 @@
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const { EmployeeModel, PostsModel } = require("../../Functions/databaseSchema");
+const { EmployeeModel, PostsModel, CustomerModel } = require("../../Functions/databaseSchema");
 const multer = require("multer");
 const upload = multer();
 const { generateToken, verifyToken } = require("../../Functions/middleware/authorisation");
@@ -48,6 +48,18 @@ app.get("/allposts", verifyToken, async (req, res) => {
                 if (users.has(userId)) {
                     currentPostLike = true;
                 }
+            }
+
+            const employeeProfile = await EmployeeModel.findOne({ _id: postObject.Id })
+            const customerProfile = await CustomerModel.findOne({ _id: postObject.Id })
+
+            const currentProfile = employeeProfile != null ? employeeProfile : customerProfile
+
+            if (currentProfile.profile_picture) {
+                postObject.profile_picture = await s3Retrieve(currentProfile.profile_picture)
+            }
+            else {
+                postObject.profile_picture = null;
             }
             postObject.liked = currentPostLike
             allPosts[i] = postObject; // Replace the original Mongoose document with the updated object
