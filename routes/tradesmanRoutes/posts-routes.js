@@ -19,9 +19,9 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
         const { title } = req.body || "";
         const date = new Date();
         const createdAt = `${date.getHours()}:${date.getMinutes()}:${date.getSeconds()} @ ${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
-        const time = createdAt.split(" ")[0]
+        const time = createdAt.split(" ")[0];
 
-        const TradesmanId = req.user.id
+        const TradesmanId = req.user.id;
 
         const exists = await EmployeeModel.findById(TradesmanId);
 
@@ -30,42 +30,45 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
         }
 
         // Assuming you want to upload the first file in the req.files array
-        if (req.files.length === 0) {
+        if (!req.files) {
             return res.status(400).json({ response: "No files uploaded" });
         }
 
-        const session = await mongoose.startSession()
+        const session = await mongoose.startSession();
         try {
             session.startTransaction();
-            // Save post to database
+
+            // Create new post and save it to the PostsModel
+            const newPost = new PostsModel({
+                title: title,
+                createdAt: createdAt,
+                videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
+                Id: TradesmanId
+            });
+
+            await newPost.save();
+
+            // Use the generated ID from newPost to store in EmployeeModel
             await EmployeeModel.findByIdAndUpdate(TradesmanId, {
                 $push: {
                     posts: {
                         title,
                         createdAt,
                         videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
-                        Id: TradesmanId
+                        Id: TradesmanId,
+                        postId: newPost._id // Store the new post's ID here
                     }
                 }
-            });
-            const newPost = new PostsModel({
-                title: title,
-                createdAt: createdAt,
-                videoName: `${TradesmanId}@${time}${req.files[0].originalname}`,
-                Id: TradesmanId
+            }).session(session);
 
-            })
-            await newPost.save()
+            // Upload the video file to S3
             await s3Upload(req.files[0], time, TradesmanId);
+
             await session.commitTransaction();
-
-        }
-        catch (err) {
+        } catch (err) {
             await session.abortTransaction();
-            return res.status(400).json({ "Error": err })
-        }
-
-        finally {
+            return res.status(400).json({ "Error": err.message });
+        } finally {
             session.endSession();
         }
 
@@ -75,6 +78,7 @@ app.post("/", verifyToken, upload.any(), async (req, res) => {
         res.status(500).json({ response: "Internal Server Error" });
     }
 });
+
 
 app.get("/", verifyToken, async (req, res) => {
     try {
@@ -132,13 +136,54 @@ app.delete("/delete/:postId", verifyToken, async (req, res) => {
         const exists = await EmployeeModel.findById(tradesmansId).session(session);
 
         if (exists) {
+            //exist is an object with the key called posts. let posts will store all existing user post in [] format
             let posts = exists.posts;
             let postFound = false;
 
             for (let i = 0; i < posts.length; i++) {
-                if (posts[i].id == post_Id) {
+                if (posts[i].postId == post_Id) {
                     postFound = true;
                     const videoName = posts[i].videoName;
+
+                    //Delete related post comment and likes:
+                    const dynamoTransactParams = {
+                        TransactItems: [
+                            {
+                                Delete: {
+                                    TableName: "Comments",
+                                    Key: {
+                                        postid: post_Id
+                                    }
+                                }
+                            }
+                            ,
+                            {
+                                Delete: {
+                                    TableName: "Likes",
+                                    Key: {
+
+                                        postId: post_Id
+                                    }
+                                }
+                            }
+                        ]
+                    };
+                    // Execute the DynamoDB transaction
+                    try {
+                        await dynamodb.transactWrite(dynamoTransactParams).promise();
+                    } catch (err) {
+                        if (err.code === 'ConditionalCheckFailedException') {
+                            // Handle the error where the item does not exist, and proceed with the flow
+                            console.warn("One or more items were not found, but continuing with other operations.");
+                        } else {
+                            console.log(err)
+                            // Re-throw the error if it’s a different issue
+                            return res.status(400).json("Dynamodb issue")
+                        }
+
+
+                    }
+
 
                     // Delete the post from PostsModel
                     await PostsModel.findOneAndDelete({ videoName: videoName }).session(session);
@@ -162,6 +207,7 @@ app.delete("/delete/:postId", verifyToken, async (req, res) => {
             }
 
             if (!postFound) {
+                console.log("post not found")
                 await session.abortTransaction();
                 session.endSession();
                 return res.status(204).json({ response: "Post not found" });
