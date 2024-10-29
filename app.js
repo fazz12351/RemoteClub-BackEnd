@@ -26,6 +26,7 @@ const TradesmanLoginRouter = require("./routes/tradesmanRoutes/login-routes")
 const TradesmanPostRouter = require("./routes/tradesmanRoutes/posts-routes")
 const TradesmanJob = require("./routes/tradesmanRoutes/jobs-routes")
 const TradesmansProfile = require("./routes/tradesmanRoutes/profile-routes")
+const TradesmansChat = require("./routes/tradesmanRoutes/chats-routes")
 
 const Video = require("./routes/generalRoutes/video")
 
@@ -39,6 +40,7 @@ app.use("/TradesmanLogin", TradesmanLoginRouter)
 app.use("/TradesmanPosts", TradesmanPostRouter)
 app.use("/TradesmanJob", TradesmanJob)
 app.use("/TradesmanProfile", TradesmansProfile)
+app.use("/TradesmanChat", TradesmansChat)
 
 
 app.use("/General/Profile", GeneralProfile)
