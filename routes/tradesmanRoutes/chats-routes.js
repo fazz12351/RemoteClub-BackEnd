@@ -99,5 +99,29 @@ app.post("/:userId", verifyToken, async (req, res) => {
 });
 
 
+app.get("/:userId", verifyToken, async (req, res) => {
+    try {
+        const currentUser = req.user.id;
+        const userId = req.params.userId;
+        const chatID = `${currentUser}:${userId}`;
+
+        const getChatQuery = {
+            TableName: "Chats",
+            Key: { ChatId: chatID }
+        };
+
+        const response = await dynamodb.get(getChatQuery).promise();
+
+        if (!response.Item) {
+            return res.status(204).json({ message: "No chats" });
+        }
+
+        return res.status(200).json(response.Item.conversation);
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+});
+
+
 
 module.exports = app
